@@ -1,0 +1,141 @@
+#' Estimate parameters and predict warps
+#'
+#' This function does likelihood estimation in the model \deqn{y_i(t)=\theta(v(t, \boldsymbol{w}_i))+x_i(t)+\varepsilon_i(t)} based on iterative local linearization of the model around predictions of the random warping parameters \eqn{\boldsymbol{w}_i}.
+#' @param y list of \eqn{n} functional observations. Missing values are allowed.
+#' @param t list of time points corresponding to y. Should be scaled to be in the interval [0, 1].
+#' @param tw anchor points for the warping parameters.
+#' @param tau initialization of warp variance.
+#' @param scale initialization of scale of serially correlated variation.
+#' @param range initialization of range of serially correlated variation.
+#' @keywords likelihood estimation
+#' @export
+#' @examples
+#' #TODO
+
+# TODO: WARPS WITH/WITHOUT GRADIENT
+# TODO: PYRAMID SCHEME! (2 types)
+# TODO: AUTOMATICALLY INITIALIZE!
+# TODO: LATER: MAKE LARGE WARPS POSSIBLE (AND CHEAP)
+# TODO: MAKE HOMEOMORPHIC CONSTRAINTS POSSIBLE
+# TODO: LATER: ALLOW LARGE m (USING SPARSE CHOL)
+# TODO: LATER: ALLOW SHIFT WARPS
+
+estimate_generic <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct, kts, tw, iter = c(5, 5), use_warp_gradient = FALSE, homeomorphisms = 'no', like_optim_control = list()) {
+  nouter <- iter[1]
+  ninner <- iter[2]
+
+  # Set size parameters
+  n <- length(y)
+  m <- sapply(y, length)
+  mw <- length(tw)
+  n_par_amp <- length(amp_cov_par)
+  n_par_warp <- length(warp_cov_par)
+
+  # Check for same data structures of y and t
+  if (length(t) != n) stop("y and t must have same length.")
+  if (!all(sapply(t, length) == m)) stop("Observations in y and t must have same length.")
+
+  # Remove missing values
+  for (i in 1:n) {
+    missing_indices <- is.na(y[[i]])
+    y[[i]] <- y[[i]][!missing_indices]
+    t[[i]] <- t[[i]][!missing_indices]
+  }
+  # Update m with cleaned data
+  m <- sapply(y, length)
+
+
+  # Initialize warp parameters
+  w <- array(0, dim = c(mw, n))
+
+  # Build amplitude covariances and inverse covariances
+  S <- Ainv <- list()
+  for (i in 1:n) {
+    S[[i]] <- amp_cov_fct(t[[i]], amp_cov_par)
+    Ainv[[i]] <- chol2inv(chol(S[[i]]))
+  }
+
+  # Build warp covariance and inverse
+  C <- warp_cov_fct(tw, warp_cov_par)
+  Cinv <- solve(C)
+
+  # Estimate spline weights
+  c <- spline_weights(y, t, w, tw, bdiag(Ainv), kts)
+
+  # Construct warp derivative
+  dwarp <- list()
+  for (i in 1:n) {
+    dwarp[[i]] <- as(dv(t[[i]], tw), "dgCMatrix")
+  }
+
+
+  for (iouter in 1:nouter) {
+    # Outer loop
+    cat(iouter, ':\t')
+
+    for (iinner in 1:ninner) {
+      # Inner loop
+      cat(iinner, '\t')
+
+      # Predict warping parameters for all functional samples
+      if (homeomorphisms == 'hard') {
+        #TODO: constrainOptim
+      } else {
+        for (i in 1:n) {
+          gr <- NULL
+          warp_optim_method <- 'Nelder-Mead'
+          if (use_warp_gradient) {
+            gr <- function(w, t, y, tw, c, Ainv, Cinv, kts) posterior_grad(w, dwarp[[i]], t, y, tw, c, Ainv, Cinv, kts)
+            warp_optim_method <- 'BFGS'
+          }
+          w[, i] <- optim(par = w[,i], fn = posterior, gr = gr, method = warp_optim_method, t = t[[i]], y = y[[i]], tw = tw, c = c, Ainv = Ainv[[i]], Cinv = Cinv, kts = kts)$par
+          if (homeomorphisms == 'soft') w[, i] <- make_homeo(w[, i], tw)
+        }
+      }
+
+      # Update spline weights
+      c <- spline_weights(y, t, w, tw, bdiag(Ainv), kts)
+    }
+
+    # Likelihood estimation of parameters (outer loop)
+
+    # Construct residual vector for given warp prediction
+    Zis <- list()
+    r <- y
+    for (i in 1:n) {
+      twarped <- v(w[, i], t[[i]], tw)
+      Zis[[i]] <- Zi(twarped, dwarp[[i]], c, kts)
+      r[[i]] <- as.numeric(r[[i]] - bs(twarped, knots = kts, Boundary.knots = c(0, 1)) %*% c + Zis[[i]] %*% w[,i])
+    }
+
+    # Check wheter the final outer loop has been reached
+    if (iouter != nouter) {
+      # Estimate parameters using locally linearized likelihood
+      lower  <- if (is.null(like_optim_control$lower)) rep(0, n_par_amp) else like_optim_control$lower
+      upper  <- if (is.null(like_optim_control$upper)) rep(Inf, n_par_amp) else like_optim_control$upper
+      method <- if (is.null(like_optim_control$method)) "L-BFGS-B" else like_optim_control$method
+      ndeps <- if (is.null(like_optim_control$ndeps)) rep(1e-3, n_par_amp) else like_optim_control$ndeps
+      #       param <- optim(c(amp_cov_par, warp_cov_par), like_stable, n_par = c(n_par_amp, n_par_warp), r = r, Zis = Zis, amp_cov_fct = amp_cov_fct, warp_cov_fct = warp_cov_fct, t = t, tw = tw, method = method, lower = lower, upper = upper, control = list(maxit = 10))$par
+      param <- optim(c(amp_cov_par, warp_cov_par), like, n_par = c(n_par_amp, n_par_warp), r = r, Zis = Zis, amp_cov_fct = amp_cov_fct, warp_cov_fct = warp_cov_fct, t = t, tw = tw, method = method, lower = lower, upper = upper, control = list(ndeps = ndeps, maxit = 10))$par
+      amp_cov_par <- param[1:n_par_amp]
+      warp_cov_par <- param[(n_par_amp + 1):length(param)]
+
+      # Update covariances
+      for (i in 1:n) {
+        S[[i]] <- amp_cov_fct(t[[i]], amp_cov_par)
+        Ainv[[i]] <- chol2inv(chol(S[[i]]))
+      }
+
+      C <- warp_cov_fct(tw, warp_cov_par)
+      Cinv <- solve(C)
+
+    } else {
+      # Estimate of sigma if final iteration is reached
+#       sigma <- 1
+      sigma <- sqrt(sigmasq(c(amp_cov_par, warp_cov_par), c(n_par_amp, n_par_warp), r, Zis, amp_cov_fct, warp_cov_fct, t, tw))
+    }
+
+    cat(':\t', param, '\n')
+  }
+  return(list(c = c, w = w, amp_cov_par = amp_cov_par, warp_cov_par = warp_cov_par, sigma = sigma))
+}
