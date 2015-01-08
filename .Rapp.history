@@ -1,0 +1,1964 @@
+y <- yl
+y
+n <- length(y)#
+	m <- sapply(y, length)#
+	mw <- length(tw)#
+    # warp parameters#
+    w <- array(0, dim = c(nw, n))#
+    # build covariances#
+    S <- Ainv <- list()#
+    for (i in 1:n) {#
+    	S[[i]] <- Matern_cov(tm[[i]], scale, range, smoothness)#
+    	Ainv[[i]] <- chol2inv(chol(diag(nrow = m[i]) + S[[i]]))#
+    }#
+    # build warp covariance and inverse#
+    C <- Brownian_cov(t = tw, type = 'bridge')#
+    Cinv <- solve(C)
+c <- spline_weights(y, tm, w, tw, bdiag(Ainv), kts)
+tw <- kts <- c(0.2, 0.5, 0.8)
+n <- length(y)#
+	m <- sapply(y, length)#
+	mw <- length(tw)#
+    # warp parameters#
+    w <- array(0, dim = c(nw, n))#
+    # build covariances#
+    S <- Ainv <- list()#
+    for (i in 1:n) {#
+    	S[[i]] <- Matern_cov(tm[[i]], scale, range, smoothness)#
+    	Ainv[[i]] <- chol2inv(chol(diag(nrow = m[i]) + S[[i]]))#
+    }#
+    # build warp covariance and inverse#
+    C <- Brownian_cov(t = tw, type = 'bridge')#
+    Cinv <- solve(C)
+c <- spline_weights(y, tm, w, tw, bdiag(Ainv), kts)
+n <- length(y)
+btime <- sapply(1:n, function(i) v(w[, i], tm[[i]], tw))
+v(w[, i], tm[[i]], tw)
+w[,i]
+tw
+nw
+w <- array(0, dim = c(mw, n))
+c <- spline_weights(y, tm, w, tw, bdiag(Ainv), kts)
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)
+tw <- kts <- c(0.2, 0.5, 0.8)#
+estimate(yl, tm, kts, tw, 1, 1, 1)
+traceback()
+spline_weights(y, tm, w, tw, bdiag(Ainv), kts)
+S[[1]]
+class(S[[1]])
+class(Ainv[[1]])
+traceback()
+dim(Ainv[1])
+class(dim(Ainv[1]))
+length(y)
+sapply(1:n, function(i) v(w[, i], tm[[i]], tw))
+btime <- sapply(1:n, function(i) v(w[, i], tm[[i]], tw))#
+    btime <- unlist(btime)
+btime
+dim(btime)
+btime <- sapply(1:n, function(i) v(w[, i], tm[[i]], tw))
+dim(btime)
+?unlist
+n <- length(y)#
+    btime <- sapply(1:n, function(i) v(w[, i], tm[[i]], tw))#
+    btime <- as.numeric(unlist(btime))
+btime
+basis <- bs(btime, knots = kts)
+class(basis)
+str(basis)
+Ainv
+Ainv <- bdiag(Ainv)
+dim(Ainv)
+t(basis) %*% Ainv
+dim(basis)
+basis <- as.matrix(bs(btime, knots = kts))
+c <- as.numeric(solve(as.matrix(t(basis) %*% Ainv %*% basis)) %*% t(basis) %*% Ainv %*% unlist(y))
+basis
+bs(btime, knots = kts)
+basis <- bs(btime, knots = kts)
+str(basis)
+basis <- bs(btime, knots = kts)[]
+str(basis)
+basis <- bs(btime, knots = kts)[[]]
+names(basis)
+attr(basis)
+attributes(basis)
+?bs
+matrix(bs(btime, knots = kts))
+dim(matrix(bs(btime, knots = kts)))
+basis <- basis[,1:ncol(basis)]
+basis
+c <- as.numeric(solve(as.matrix(t(basis) %*% Ainv %*% basis)) %*% t(basis) %*% Ainv %*% unlist(y))
+basis <- basis[,]
+basis <- bs(btime, knots = kts)#
+    basis <- basis[,]
+basis
+c <- as.numeric(solve(as.matrix(t(basis) %*% Ainv %*% basis)) %*% t(basis) %*% Ainv %*% unlist(y))
+basis <- bs(btime, knots = kts)
+c <- as.numeric(solve(as.matrix(t(basis) %*% Ainv %*% basis)) %*% t(basis) %*% Ainv %*% unlist(y))
+basis <- bs(btime, knots = kts)[]
+c <- as.numeric(solve(as.matrix(t(basis) %*% Ainv %*% basis)) %*% t(basis) %*% Ainv %*% unlist(y))
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)
+tw <- kts <- c(0.2, 0.5, 0.8)#
+estimate(yl, tm, kts, tw, 1, 1, 1)
+traceback()
+t1
+dv <- function(t, tw) {#
+	mw <- length(tw)#
+    # Derivative of warp function#
+    apply(cbind(c(0, tw[-mw]), tw, c(tw[-1], 1)), 1, function(x) {#
+        a <- rep(0, length(t))#
+        a[t > x[1] & t < x[2]] <- ((t - x[1])/(x[2] - x[1]))[t > x[1] & t < x[2]]#
+        a[t >= x[2] & t < x[3]] <- (1 - ((t - x[2])/(x[3] - x[2])))[t >= x[2] & t < x[3]]#
+        return(a)#
+    })#
+}
+tw <- kts <- c(0.2, 0.5, 0.8)#
+estimate(yl, tm, kts, tw, 1, 1, 1)
+traceback*
+traceback()
+dv(t, tw)
+tw <- kts <- c(0.2, 0.5, 0.8)#
+estimate(yl, tm, kts, tw, 1, 1, 1)
+traceback()
+traceback()
+tw <- kts <- c(0.2, 0.5, 0.8)#
+estimate(yl, tm, kts, tw, 1, 1, 1)
+traceback()
+n
+n
+m
+tm
+dwarp <- list()    #
+    for (i in 1:n) {#
+    	dwarp[[i]] <- as(Matrix(dv(tm[[i]], tw)), "dgCMatrix")#
+    }
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)
+rm(list = ls())#
+#
+##
+# Make package#
+##
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 50#
+m <- 100#
+nw <- 20#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+estimate(yl, tm, kts, tw, 1, 1, 1)#
+traceback()
+y <y-l
+y <- yl
+n <- length(y)#
+	m <- sapply(y, length)#
+	mw <- length(tw)
+# warp parameters#
+    w <- array(0, dim = c(mw, n))#
+    # build covariances#
+    S <- Ainv <- list()#
+    for (i in 1:n) {#
+    	S[[i]] <- Matern_cov(tm[[i]], scale, range, smoothness)#
+    	Ainv[[i]] <- chol2inv(chol(diag(nrow = m[i]) + S[[i]]))#
+    }
+tau <- scale <- range <- 1
+# warp parameters#
+    w <- array(0, dim = c(mw, n))#
+    # build covariances#
+    S <- Ainv <- list()#
+    for (i in 1:n) {#
+    	S[[i]] <- Matern_cov(tm[[i]], scale, range, smoothness)#
+    	Ainv[[i]] <- chol2inv(chol(diag(nrow = m[i]) + S[[i]]))#
+    }
+smoothness <- 2
+# warp parameters#
+    w <- array(0, dim = c(mw, n))#
+    # build covariances#
+    S <- Ainv <- list()#
+    for (i in 1:n) {#
+    	S[[i]] <- Matern_cov(tm[[i]], scale, range, smoothness)#
+    	Ainv[[i]] <- chol2inv(chol(diag(nrow = m[i]) + S[[i]]))#
+    }
+# build warp covariance and inverse#
+    C <- Brownian_cov(t = tw, type = 'bridge')#
+    Cinv <- solve(C)#
+    # estimate spline weights #
+    c <- spline_weights(y, tm, w, tw, bdiag(Ainv), kts)
+c
+# warp derivative    #
+    dwarp <- list()    #
+    for (i in 1:n) {#
+    	dwarp[[i]] <- as(Matrix(dv(tm[[i]], tw)), "dgCMatrix")#
+    }
+dv <- function(t, tw) {#
+	mw <- length(tw)#
+    # Derivative of warp function#
+    apply(cbind(c(0, tw[-mw]), tw, c(tw[-1], 1)), 1, function(x) {#
+        a <- rep(0, length(t))#
+        a[t > x[1] & t < x[2]] <- ((t - x[1])/(x[2] - x[1]))[t > x[1] & t < x[2]]#
+        a[t >= x[2] & t < x[3]] <- (1 - ((t - x[2])/(x[3] - x[2])))[t >= x[2] & t < x[3]]#
+        return(a)#
+    })#
+}
+# warp derivative    #
+    dwarp <- list()    #
+    for (i in 1:n) {#
+    	dwarp[[i]] <- as(Matrix(dv(tm[[i]], tw)), "dgCMatrix")#
+    }
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+traceback()
+posterior(w[,1], tm[[1]], yl[[1]], tw, Ainv[[1]], tau, Cinv)
+yl[[1]]
+bs(v(w[,1], t, tw), knots = knots, Boundary.knots = Boundary.knots) %*% c
+bs(v(w[,1], t, tw), knots = knots) %*% c
+bs(v(w[,1], t, tw), knots = knots)
+knots
+posterior <- function(w, t, y, tw, c, Ainv, tau, Cinv, kts, Boundary.knots = c(0, 1)) {#
+    r <- y - bs(v(w, t, tw), knots = kts, Boundary.knots = Boundary.knots) %*% c#
+    return((t(r) %*% Ainv %*% r + tau^-2 * t(w) %*% Cinv %*% w)[1])#
+}
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+traceback()
+posterior(w[,1], tm[[1]], yl[[1]], tw, Ainv[[1]], tau, Cinv)
+posterior(w[,1], tm[[1]], yl[[1]], tw, Ainv[[1]], tau, Cinv, kts)
+posterior(w[,1], tm[[1]], yl[[1]], tw, c, Ainv[[1]], tau, Cinv, kts)
+i
+optim(par = w[,i], fn = posterior, t = tm[[i]], y = y[[i]], tw = tw, c = c, Ainv = Ainv[[i]], tau = tau, Cinv = Cinv, kts = kts)$par
+rm(list = ls())#
+#
+##
+# Make package#
+##
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 50#
+m <- 100#
+nw <- 20#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+traceback()
+posterior
+rm(list = ls())#
+#
+##
+# Make package#
+##
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 50#
+m <- 100#
+nw <- 20#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+traceback()
+rm(list = ls())#
+#
+##
+# Make package#
+##
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 50#
+m <- 100#
+nw <- 20#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+traceback()
+wwarnings()
+warnings()
+rm(list = ls())#
+#
+##
+# Make package#
+##
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 50#
+m <- 100#
+nw <- 20#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+traceback()
+rm(list = ls())#
+#
+##
+# Make package#
+##
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 50#
+m <- 100#
+nw <- 20#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+traceback()
+t('chol')
+y <- yl
+# set size parameters#
+    n <- length(y)#
+	m <- sapply(y, length)#
+	mw <- length(tw)#
+    # warp parameters#
+    w <- array(0, dim = c(mw, n))#
+    # build covariances#
+    S <- Ainv <- list()#
+    for (i in 1:n) {#
+    	S[[i]] <- Matern_cov(tm[[i]], scale, range, smoothness)#
+    	Ainv[[i]] <- chol2inv(chol(diag(nrow = m[i]) + S[[i]]))#
+    }#
+    # build warp covariance and inverse#
+    C <- Brownian_cov(t = tw, type = 'bridge')#
+    Cinv <- solve(C)#
+    # estimate spline weights #
+    c <- spline_weights(y, tm, w, tw, bdiag(Ainv), kts)#
+#
+    # warp derivative    #
+    dwarp <- list()    #
+    for (i in 1:n) {#
+    	dwarp[[i]] <- as(Matrix(dv(tm[[i]], tw)), "dgCMatrix")#
+    }
+smoothness <_ 2
+smoothness <- 2
+# set size parameters#
+    n <- length(y)#
+	m <- sapply(y, length)#
+	mw <- length(tw)#
+    # warp parameters#
+    w <- array(0, dim = c(mw, n))#
+    # build covariances#
+    S <- Ainv <- list()#
+    for (i in 1:n) {#
+    	S[[i]] <- Matern_cov(tm[[i]], scale, range, smoothness)#
+    	Ainv[[i]] <- chol2inv(chol(diag(nrow = m[i]) + S[[i]]))#
+    }#
+    # build warp covariance and inverse#
+    C <- Brownian_cov(t = tw, type = 'bridge')#
+    Cinv <- solve(C)#
+    # estimate spline weights #
+    c <- spline_weights(y, tm, w, tw, bdiag(Ainv), kts)#
+#
+    # warp derivative    #
+    dwarp <- list()    #
+    for (i in 1:n) {#
+    	dwarp[[i]] <- as(Matrix(dv(tm[[i]], tw)), "dgCMatrix")#
+    }
+for (iinner in 1:ninner) {#
+        	# Inner loop#
+        	cat(iinner, '\t')			#
+			# predict warping parameters for all functional samples#
+			for (i in 1:n) {#
+				w[,i] <- optim(par = w[,i], fn = posterior, t = tm[[i]], y = y[[i]], tw = tw, c = c, Ainv = Ainv[[i]], tau = tau, Cinv = Cinv, kts = kts)$par#
+			}#
+            # update mean function#
+            c <- spline_weights(y, tm, w, tw, bdiag(Ainv), kts)#
+		}#
+		cat('\n')
+ninner <- 2
+for (iinner in 1:ninner) {#
+        	# Inner loop#
+        	cat(iinner, '\t')			#
+			# predict warping parameters for all functional samples#
+			for (i in 1:n) {#
+				w[,i] <- optim(par = w[,i], fn = posterior, t = tm[[i]], y = y[[i]], tw = tw, c = c, Ainv = Ainv[[i]], tau = tau, Cinv = Cinv, kts = kts)$par#
+			}#
+            # update mean function#
+            c <- spline_weights(y, tm, w, tw, bdiag(Ainv), kts)#
+		}#
+		cat('\n')
+plot(t, bs(t, kts) %*% c)
+plot(t, bs(t, knots = kts) %*% c)
+Zis <- list()#
+        r <- y#
+        for (i in 1:n) {#
+			twarped <- v(w[, i], tm[[i]], tw)#
+            Zis[[i]] <- Zi(twarped, dwarp[[i]], c, kts)#
+			r[[i]] <- r[[i]] - bs(twarped, knots = kts) %*% c + Zis[[i]] %*% w[,i]#
+        }
+Zis[[1]]
+param <- optim(c(tau, scale, range), like, r = r, Zis = Zis, Cinv = Cinv, smoothness = smoothness, method = "L-BFGS-B", lower = c(1, 1, 1e-07), upper = c(1e6, 1e6, 5), control = list(maxit = 10, trace = 0, parscale = c(tau, scale, range)))$par
+t(Zis[[1]])
+like(c(1,1,1), r, Zis, Cinv, 2)
+traceback()
+Cinv
+like <- function(param, r, Zis, Cinv, smoothness) {#
+    tau <- param[1]#
+    scale <- param[2]#
+    range <- param[3]#
+    n <- length(r)#
+	m <- sapply(r, length)#
+#
+    sq <- logdet <- 0#
+    for (i in 1:n) {#
+    	cat(i, '\n')#
+    	S <- Matern_cov(tm[[i]], scale, range, smoothness)#
+        rr <- r[[i]]#
+        C <- chol(S + diag(x = 1, nrow = m[i]))#
+        A <- chol2inv(C)#
+        ZZ <- Zis[[i]]#
+        LR <- chol2inv(chol(tau^-2 * Cinv + t(ZZ) %*% A %*% ZZ))#
+        x <- t(ZZ) %*% A %*% rr#
+        sq <- sq + t(rr) %*% A %*% rr - t(x) %*% LR %*% x#
+        logdet <- logdet - determinant(LR)$modulus[1] + 2 * sum(log(diag(C)))#
+    }#
+    logdet <- logdet - n * determinant(tau^-2 * Cinv)$modulus[1]#
+    sigmahat <- 1/sum(m) * sq#
+    res <- sum(m) * log(sigmahat) + logdet#
+    return(res)#
+}
+like(c(1,1,1), r, Zis, Cinv, 2)
+like <- function(param, r, Zis, Cinv, smoothness) {#
+    tau <- param[1]#
+    scale <- param[2]#
+    range <- param[3]#
+    n <- length(r)#
+	m <- sapply(r, length)#
+#
+    sq <- logdet <- 0#
+    for (i in 1:n) {#
+    	S <- Matern_cov(tm[[i]], scale, range, smoothness)#
+        rr <- r[[i]]#
+        C <- chol(S + diag(x = 1, nrow = m[i]))#
+        A <- chol2inv(C)#
+        ZZ <- Zis[[i]]#
+        LR <- chol2inv(chol(tau^-2 * Cinv + t(ZZ) %*% A %*% ZZ))#
+        x <- t(ZZ) %*% A %*% rr#
+        sq <- sq + t(rr) %*% A %*% rr - t(x) %*% LR %*% x#
+        logdet <- logdet - determinant(LR)$modulus[1] + 2 * sum(log(diag(C)))#
+    }#
+    logdet <- logdet - n * determinant(tau^-2 * Cinv)$modulus[1]#
+    sigmahat <- 1/sum(m) * sq#
+    res <- sum(m) * log(sigmahat) + logdet#
+    return(res)#
+}
+like <- function(param, r, Zis, Cinv, smoothness) {#
+    tau <- param[1]#
+    scale <- param[2]#
+    range <- param[3]#
+    n <- length(r)#
+	m <- sapply(r, length)#
+#
+    sq <- logdet <- 0#
+    for (i in 1:n) {#
+    	cat(i, '\n')#
+    	S <- Matern_cov(tm[[i]], scale, range, smoothness)#
+        rr <- r[[i]]#
+        C <- chol(S + diag(x = 1, nrow = m[i]))#
+        A <- chol2inv(C)#
+        ZZ <- Zis[[i]]#
+        LR <- chol2inv(chol(tau^-2 * Cinv + t(ZZ) %*% A %*% ZZ))#
+        x <- t(ZZ) %*% A %*% rr#
+        sq <- sq + t(rr) %*% A %*% rr - t(x) %*% LR %*% x#
+        logdet <- logdet - determinant(LR)$modulus[1] + 2 * sum(log(diag(C)))#
+    }#
+    logdet <- logdet - n * determinant(tau^-2 * Cinv)$modulus[1]#
+    sigmahat <- 1/sum(m) * sq#
+    res <- sum(m) * log(sigmahat) + logdet#
+    return(res)#
+}
+like(c(1,1,1), r, Zis, Cinv, 2)
+n
+m
+sq <- logdet <- 0
+S <- Matern_cov(tm[[i]], scale, range, smoothness)
+S
+rr <- r[[i]]
+C <- chol(S + diag(x = 1, nrow = m[i]))
+A <- chol2inv(C)
+A
+ZZ <- Zis[[i]]
+ZZ
+LR <- chol2inv(chol(tau^-2 * Cinv + t(ZZ) %*% A %*% ZZ))
+t(ZZ) %*% A %*% ZZ
+tau^-2 * Cinv + (t(ZZ) %*% A %*% ZZ))
+tau^-2 * Cinv + (t(ZZ) %*% A %*% ZZ)
+chol(tau^-2 * Cinv + (t(ZZ) %*% A %*% ZZ))
+LR <- chol2inv(chol(tau^-2 * Cinv + as.matrix(t(ZZ) %*% A %*% ZZ)))
+ZZ <- Zis[[i]]
+ZZ
+ZZ <- Zis[[i]][]
+ZZ
+LR <- chol2inv(chol(tau^-2 * Cinv + as.matrix(t(ZZ) %*% A %*% ZZ)))
+sq <- logdet <- 0#
+    for (i in 1:n) {#
+    	S <- Matern_cov(tm[[i]], scale, range, smoothness)#
+        rr <- r[[i]]#
+        C <- chol(S + diag(x = 1, nrow = m[i]))#
+        A <- chol2inv(C)#
+        ZZ <- Zis[[i]][]#
+        LR <- chol2inv(chol(tau^-2 * Cinv + as.matrix(t(ZZ) %*% A %*% ZZ)))#
+        x <- t(ZZ) %*% A %*% rr#
+        sq <- sq + t(rr) %*% A %*% rr - t(x) %*% LR %*% x#
+        logdet <- logdet - determinant(LR)$modulus[1] + 2 * sum(log(diag(C)))#
+    }#
+    logdet <- logdet - n * determinant(tau^-2 * Cinv)$modulus[1]
+sigmahat <- 1/sum(m) * sq#
+    res <- sum(m) * log(sigmahat) + logdet
+res
+res[]
+logdet
+sigmahat
+sigmahat <- 1/sum(m) * as.numeric(sq)#
+    res <- sum(m) * log(sigmahat) + logdet
+res
+rm(list = ls())#
+#
+##
+# Make package#
+##
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 50#
+m <- 100#
+nw <- 20#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+smoothness <- 2#
+estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+traceback()
+like
+rm(list = ls())#
+#
+##
+# Make package#
+##
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 50#
+m <- 100#
+nw <- 20#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+smoothness <- 2#
+estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+traceback()
+rm(list = ls())#
+#
+##
+# Make package#
+##
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 50#
+m <- 100#
+nw <- 20#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+smoothness <- 2#
+estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+traceback()
+like
+rm(list = ls())#
+#
+##
+# Make package#
+##
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 50#
+m <- 100#
+nw <- 20#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+smoothness <- 2#
+estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+traceback()
+rm(list = ls())#
+#
+##
+# Make package#
+##
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 50#
+m <- 100#
+nw <- 20#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+smoothness <- 2#
+estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+traceback()
+importFrom(Matrix,t)
+rm(list = ls())#
+#
+##
+# Make package#
+##
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 50#
+m <- 100#
+nw <- 20#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+smoothness <- 2#
+estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+traceback()
+rm(list = ls())#
+#
+##
+# Make package#
+##
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 20#
+m <- 50#
+nw <- 20#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+smoothness <- 2#
+estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+traceback()
+rm(list = ls())#
+#
+##
+# Make package#
+##
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 20#
+m <- 50#
+nw <- 20#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+smoothness <- 2#
+estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+traceback()
+rm(list = ls())#
+#
+##
+# Make package#
+##
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 20#
+m <- 50#
+nw <- 20#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+smoothness <- 2#
+estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+traceback()
+rm(list = ls())#
+#
+##
+# Make package#
+##
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 20#
+m <- 50#
+nw <- 20#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+smoothness <- 2#
+estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+traceback()
+res <- estimate(yl, tm, kts, tw, tau, scale, range, 1)
+rm(list = ls())#
+#
+##
+# Make package#
+##
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 20#
+m <- 50#
+nw <- 20#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+smoothness <- 2#
+res <- estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+traceback()
+warnings()
+res
+rm(list = ls())#
+#
+##
+# Make package#
+##
+#
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 20#
+m <- 50#
+nw <- 20#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+scale <- 1#
+range <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+#
+S <- Matern_cov(t, scale, range, 2)#
+Ssqrt <- t(chol(sigma^2 * S))#
+#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + Ssqrt %*% rnorm(m, sd = 1) +  rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+smoothness <- 2#
+res <- estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+traceback()
+res
+res$sigma
+cat(sigma, scale, range, tau, '\n', sep = '\t')#
+cat(res$sigma, res$scale, res$range, res$tau, '\n', sep = '\t')
+cat(sigma, res$sigma, '\n', scale, res$scale, '\n', range, res$range, '\n', tau, '\n', sep = '\t')
+\t
+cat('\t', sigma, res$sigma, '\n', scale, res$scale, '\n', range, res$range, '\n', tau, '\n', sep = '\t')
+cat('\t', sigma, res$sigma, '\n', scale, res$scale, '\n', range, res$range, '\n', tau, res$tau, sep = '\t')
+rm(list = ls())#
+#
+##
+# Make package#
+##
+#
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 50#
+m <- 50#
+nw <- 20#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+scale <- 1#
+range <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+#
+S <- Matern_cov(t, scale, range, 2)#
+Ssqrt <- t(chol(sigma^2 * S))#
+#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + Ssqrt %*% rnorm(m, sd = 1) +  rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+smoothness <- 2#
+res <- estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+#
+cat('\t', sigma, res$sigma, '\n', scale, res$scale, '\n', range, res$range, '\n', tau, res$tau, sep = '\t')#
+#traceback()
+cat('sigma:\t', sigma, '\t', res$sigma, '\n', scale, res$scale, '\n', range, res$range, '\n', tau, res$tau, sep = '')
+cat('sigma:\t', sigma, '\t', res$sigma, '\n', 'scale:\t', scale, '\t', res$scale, '\n', 'range:\t', range, '\t' res$range, '\n', tau, res$tau, sep = '')
+cat('sigma:\t', sigma, '\t', res$sigma, '\n', 'scale:\t', scale, '\t', res$scale, '\n', 'range:\t', range, '\t', res$range, '\n', tau, res$tau, sep = '')
+cat('sigma:\t', sigma, '\t', res$sigma, '\n', 'scale:\t', scale, '\t', res$scale, '\n', 'range:\t', range, '\t', res$range, '\n', 'tau:\t', tau, '\t' res$tau, sep = '')
+cat('sigma:\t', sigma, '\t', res$sigma, '\n', 'scale:\t', scale, '\t', res$scale, '\n', 'range:\t', range, '\t', res$range, '\n', 'tau:\t', tau, '\t', res$tau, sep = '')
+cat('sigma:\t', sigma, '\t\t', res$sigma, '\n', 'scale:\t', scale, '\t\t', res$scale, '\n', 'range:\t\t', range, '\t\t', res$range, '\n', 'tau:\t', tau, '\t\t', res$tau, sep = '')
+cat('sigma:\t', sigma, '\t\t', res$sigma, '\n', 'scale:\t', scale, '\t\t', res$scale, '\n', 'range:\t', range, '\t\t', res$range, '\n', 'tau:\t', tau, '\t\t', res$tau, sep = '')
+rm(list = ls())#
+#
+##
+# Make package#
+##
+#
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 50#
+m <- 100#
+nw <- 10#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+scale <- 1#
+range <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+#
+S <- Matern_cov(t, scale, range, 2)#
+Ssqrt <- t(chol(sigma^2 * S))#
+#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + Ssqrt %*% rnorm(m, sd = 1) +  rnorm(m, sd = sigma)#
+}#
+# Plot data#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- kts <- c(0.2, 0.5, 0.8)#
+tau <- scale <- range <- 1#
+smoothness <- 2#
+res <- estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+#
+cat('sigma:\t', sigma, '\t\t', res$sigma, '\n', 'scale:\t', scale, '\t\t', res$scale, '\n', 'range:\t', range, '\t\t', res$range, '\n', 'tau:\t', tau, '\t\t', res$tau, sep = '')#
+#traceback()
+par(mfrow = c(1,2))#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.3)
+par(mfrow = c(1,2))#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.2)
+par(mfrow = c(1,2))#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2, col = 'green')#
+for (i in 1:n) lines(t, y[, i], lwd = 0.2)
+par(mfrow = c(1,2))#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.2)
+vinv <- function(w, t, tw) {#
+    t + approx(c(0, tw + w, 1), c(0, tw, 0), xout = t, rule = 2)$y#
+}
+plot(v(0.4, t, 0.5), type = 'b', pch = 19)
+lines(vinv(0.4, t, 0.5), type = 'b', pch = 19)
+vinv <- function(w, t, tw) {#
+    t + approx(c(0, tw + w, 1), rep(0, length(tw + 2)), xout = t, rule = 2)$y#
+}
+plot(v(0.4, t, 0.5), type = 'b', pch = 19)
+lines(vinv(0.4, t, 0.5), type = 'b', pch = 19)
+vinv <- function(w, t, tw) {#
+    t + approx(c(0, tw + w, 1), rep(0, length(tw) + 2), xout = t, rule = 2)$y#
+}
+lines(vinv(0.4, t, 0.5), type = 'b', pch = 19)
+vinv <- function(w, t, tw) {#
+    approx(c(0, tw + w, 1), c(0, tw, 1), xout = t, rule = 2)$y#
+}
+lines(vinv(0.4, t, 0.5), type = 'l', pch = 19)
+vinv <- function(w, t, tw) {#
+    approx(c(0, tw + w, 1), c(0, tw, 1), xout = t, rule = 2)$y#
+}
+res
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)
+for (i in 1:n) lines(v(res$w[,i], t, tw), y[, i], lwd = 0.3)
+for (i in 1:n) lines(vinv(res$w[,i], t, tw), y[, i], lwd = 0.3)
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(vinv(res$w[,i], t, tw), y[, i], lwd = 0.3)
+knots
+rm(list = ls())#
+#
+##
+# Make package#
+##
+#
+library(devtools)#
+#
+setwd('~/Dropbox/registration/')#
+document()#
+#
+setwd("..")#
+install("registration")#
+setwd('~/Dropbox/registration/')#
+require(registration)#
+#
+##
+# Set up data#
+##
+#
+n <- 50#
+m <- 100#
+nw <- 10#
+nknots <- 10#
+t <- seq(0, 1, length = m)#
+tw <- seq(0, 1, length = nw + 2)[2:(nw + 1)]#
+knots <- seq(0, 1, length = nknots + 2)[2:(nknots + 1)]#
+#
+basis <- bs(t, knots = knots, Boundary.knots = c(0, 1))#
+# Simulate data#
+#
+sigma <- 0.2#
+tau <- 0.5#
+scale <- 1#
+range <- 0.5#
+#
+c_true <- rnorm(ncol(basis))#
+#
+theta_t <- basis %*% c_true#
+#
+# Covariance#
+#
+C <- Brownian_cov(tw, type = 'bridge')#
+Cinv <- solve(C)#
+Csqrt <- t(chol(sigma^2 * tau^2 * C))#
+#
+S <- Matern_cov(t, scale, range, 2)#
+Ssqrt <- t(chol(sigma^2 * S))#
+#
+w <- replicate(n, Csqrt %*% rnorm(nw))[, , 1:n]#
+y <- array(NA, dim = c(m, n))#
+#
+for (i in 1:n) {#
+    y[, i] <- bs(v(w[, i], t, tw), knots = knots, Boundary.knots = c(0, 1)) %*% c_true + Ssqrt %*% rnorm(m, sd = 1) +  rnorm(m, sd = sigma)#
+}#
+# Plot data#
+par(mfrow = c(1,2))#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.2)#
+tm <- yl <- list()#
+for (i in 1:n) {#
+	tm[[i]] <- t#
+	yl[[i]] <- y[,i]#
+}#
+#
+# Estimate#
+#
+tw <- c(0.2, 0.5, 0.8)#
+kts <- knots#
+tau <- scale <- range <- 1#
+smoothness <- 2#
+res <- estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+#
+cat('sigma:\t', sigma, '\t\t', res$sigma, '\n', 'scale:\t', scale, '\t\t', res$scale, '\n', 'range:\t', range, '\t\t', res$range, '\n', 'tau:\t', tau, '\t\t', res$tau, sep = '')#
+#traceback()#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(v(res$w[,i], t, tw), y[, i], lwd = 0.3)
+knots
+tw <- seq(0, 1, length = 12)[2:11]#
+kts <- knots#
+tau <- scale <- range <- 1#
+smoothness <- 2#
+res <- estimate(yl, tm, kts, tw, tau, scale, range, 1)#
+#
+cat('sigma:\t', sigma, '\t\t', res$sigma, '\n', 'scale:\t', scale, '\t\t', res$scale, '\n', 'range:\t', range, '\t\t', res$range, '\n', 'tau:\t', tau, '\t\t', res$tau, sep = '')#
+#traceback()#
+#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(v(res$w[,i], t, tw), y[, i], lwd = 0.3)
+# Plot data#
+par(mfrow = c(1,2))#
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(t, y[, i], lwd = 0.2)
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(v(res$w[,i], t, tw), y[, i], lwd = 0.3)
+res
+lines(t, basis %*% c, col = 'green, lwd = 2')
+lines(t, basis %*% res$c, col = 'green, lwd = 2')
+lines(t, basis %*% res$c, col = 'green', lwd = 2)
+plot(t, theta_t, ylim = c(min(y), max(y)), type = "l", lwd = 2, lty = 2)#
+for (i in 1:n) lines(v(res$w[,i], t, tw), y[, i], lwd = 0.2)#
+lines(t, basis %*% res$c, col = 'green', lwd = 2)
+plot(t, t, type = 'n')
+lines(v(res$w[,i], t, tw))
+dim(w)
+for (i in 1:n) lines(v(w[, i], t, tw), v(res$w[,i], t, tw))
+par(mfrow = c(1,2))#
+#
+plot(t, t, type = 'n')#
+for (i in 1:n) lines(v(w[, i], t, tw), t)#
+#
+plot(t, t, type = 'n')#
+for (i in 1:n) lines(v(w[, i], t, tw), v(res$w[,i], t, tw))
+version()
