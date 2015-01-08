@@ -8,7 +8,7 @@
 #' @export
 #' @examples
 #' t <- seq(0, 1, length = 10)
-#' plot(v(0.4, t, 0.5), type = 'l', pch = 19)
+#' plot(t, v(0.4, t, 0.5), type = 'l', pch = 19)
 
 v <- function(w, t, tw) {
   t + approx(c(0, tw, 1), c(0, w, 0), xout = t, rule = 2)$y
@@ -21,8 +21,6 @@ v <- function(w, t, tw) {
 #' @param tw anchor points for the warping parameters.
 #' @keywords warp derivative
 #' @export
-#' @examples
-#' #TODO
 
 dv <- function(t, tw) {
   mw <- length(tw)
@@ -38,9 +36,7 @@ dv <- function(t, tw) {
 #' Compute the inverse warping function weights
 #'
 #' This function evaluates the inverse warping function corresponding to a specified set of warping parameters at a set of evaluation points using linear interpolation.
-#' @param w warping parameters.
-#' @param t evaluation points.
-#' @param tw anchor points for the warping parameters.
+#' @inheritParams v
 #' @keywords warping
 #' @export
 #' @examples
@@ -54,6 +50,13 @@ vinv <- function(w, t, tw) {
 
 
 #' Project warping parameters onto the set of values that produce homeomorphic warping functions
+#'
+#' Projects a set of warping parameters onto the set of values that produce homeomorphic warping functions using constrOptim.
+#' @param w warping parameters.
+#' @param tw anchor points for the warping parameters.
+#' @param epsilon the smallest allowed slope between two points at unit spacing.
+#' @keywords warping
+#' @export
 
 make_homeo <- function(w, tw, epsilon = 0.2) {
   nw <- length(w)

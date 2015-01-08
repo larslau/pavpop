@@ -16,7 +16,4 @@ Zi(t, dwarp, c, kts)
 \description{
 Computes the Jacobian of a warped B-spline function.
 }
-\examples{
-#TODO
-}
 

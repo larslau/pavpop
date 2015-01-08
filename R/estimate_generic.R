@@ -1,24 +1,31 @@
-#' Estimate parameters and predict warps
-#'
-#' This function does likelihood estimation in the model \deqn{y_i(t)=\theta(v(t, \boldsymbol{w}_i))+x_i(t)+\varepsilon_i(t)} based on iterative local linearization of the model around predictions of the random warping parameters \eqn{\boldsymbol{w}_i}.
-#' @param y list of \eqn{n} functional observations. Missing values are allowed.
-#' @param t list of time points corresponding to y. Should be scaled to be in the interval [0, 1].
-#' @param tw anchor points for the warping parameters.
-#' @param tau initialization of warp variance.
-#' @param scale initialization of scale of serially correlated variation.
-#' @param range initialization of range of serially correlated variation.
-#' @keywords likelihood estimation
-#' @export
-#' @examples
-#' #TODO
-
 # TODO: WARPS WITH/WITHOUT GRADIENT
 # TODO: PYRAMID SCHEME! (2 types)
 # TODO: AUTOMATICALLY INITIALIZE!
 # TODO: LATER: MAKE LARGE WARPS POSSIBLE (AND CHEAP)
-# TODO: MAKE HOMEOMORPHIC CONSTRAINTS POSSIBLE
+# TODO: MAKE HARD HOMEOMORPHIC CONSTRAINTS POSSIBLE
 # TODO: LATER: ALLOW LARGE m (USING SPARSE CHOL)
 # TODO: LATER: ALLOW SHIFT WARPS
+
+
+#' Estimate parameters and predict warps for curve data
+#'
+#' This function does likelihood estimation in the model \deqn{y_i(t)=\theta(v(t, w_i))+x_i(t)+\epsilon_i(t)} based on iterative local linearization of the model around predictions of the random warping parameters \eqn{w_i}.
+#' @param y list of \eqn{n} functional observations. Missing values are allowed.
+#' @param t list of time points corresponding to y. Should be scaled to have outer endpoints at 0 and 1.
+#' @param amp_cov_par amplitude covariance parameters.
+#' @param amp_cov_fct amplitude covariance matrix function.
+#' @param warp_cov_par warp covariance parameters.
+#' @param warp_cov_fct warp covariance matrix function.
+#' @param kts anchor points for the B-spline basis used to model \eqn{\theta}.
+#' @param tw anchor points for the warping parameters.
+#' @param iter two-dimensional numeric consisting of number of outer and inner iterations.
+#' @param use_warp_gradient logical. Should warp prediction use gradient based optimization?
+#' @param homeomorphisms should warps be constrained to be homeomorphisms? Options are: \code{'no'}, \code{'soft'} or \code{'hard'}. 'soft' will project the prediction onto the space of homeomorphisms after each prediction. 'hard' will do the optimiziation in the constrained space (not implemented yet!).
+#' @param like_optim_control list of control options for likelihood optimization. Parameters are given as \code{c(amp_cov_par, warp_cov_par)} and options include lower, upper, method, ndev (see \code{\link[stats::optim]{optim}}).
+#' @keywords likelihood estimation
+#' @export
+#' @examples
+#' #TODO
 
 estimate_generic <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct, kts, tw, iter = c(5, 5), use_warp_gradient = FALSE, homeomorphisms = 'no', like_optim_control = list()) {
   nouter <- iter[1]
@@ -80,6 +87,7 @@ estimate_generic <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_
       # Predict warping parameters for all functional samples
       if (homeomorphisms == 'hard') {
         #TODO: constrainOptim
+        stop("Hard homeomorphic constrained optimization for warps is not implemented.")
       } else {
         for (i in 1:n) {
           gr <- NULL
@@ -115,8 +123,9 @@ estimate_generic <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_
       upper  <- if (is.null(like_optim_control$upper)) rep(Inf, n_par_amp) else like_optim_control$upper
       method <- if (is.null(like_optim_control$method)) "L-BFGS-B" else like_optim_control$method
       ndeps <- if (is.null(like_optim_control$ndeps)) rep(1e-3, n_par_amp) else like_optim_control$ndeps
-      #       param <- optim(c(amp_cov_par, warp_cov_par), like_stable, n_par = c(n_par_amp, n_par_warp), r = r, Zis = Zis, amp_cov_fct = amp_cov_fct, warp_cov_fct = warp_cov_fct, t = t, tw = tw, method = method, lower = lower, upper = upper, control = list(maxit = 10))$par
+
       param <- optim(c(amp_cov_par, warp_cov_par), like, n_par = c(n_par_amp, n_par_warp), r = r, Zis = Zis, amp_cov_fct = amp_cov_fct, warp_cov_fct = warp_cov_fct, t = t, tw = tw, method = method, lower = lower, upper = upper, control = list(ndeps = ndeps, maxit = 10))$par
+
       amp_cov_par <- param[1:n_par_amp]
       warp_cov_par <- param[(n_par_amp + 1):length(param)]
 
@@ -131,7 +140,6 @@ estimate_generic <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_
 
     } else {
       # Estimate of sigma if final iteration is reached
-#       sigma <- 1
       sigma <- sqrt(sigmasq(c(amp_cov_par, warp_cov_par), c(n_par_amp, n_par_warp), r, Zis, amp_cov_fct, warp_cov_fct, t, tw))
     }
 

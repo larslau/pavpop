@@ -1,6 +1,3 @@
-#TODO: CONSISTENTLY USE c(0, 1) as boundary knots!!
-
-
 #' Locally linearized likelihood function
 #'
 #' Computes the linearized likelihood given the residual around a given warp and the corresponding Jacobians.
@@ -17,7 +14,6 @@
 #' @export
 #' @importFrom Matrix t
 
-#TODO: Change n_par
 #TODO: Allow for no warping/amplitude covariance
 
 like <- function(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw) {
@@ -49,68 +45,13 @@ like <- function(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw) {
   return(res)
 }
 
-
-
-
-#TODO: DELETE!!
-
-#' Stable locally linearized likelihood function
-#'
-#' Computes the linearized likelihood given the residual around a given warp and the corresponding Jacobians.
-#' @param param variance parameters.
-#' @param n_par vector consisting of number of variance parameters for each covariance function.
-#' @param r residual.
-#' @param Zis list of Jacobians in the warps of the mean function around the given warp.
-#' @param amp_cov_fct function for generating amplitude covariance matrix.
-#' @param warp_cov_fct function for generating warp covariance function
-#' @param t array of time variables corresponding to r.
-#' @param tw anchor points for warp variables.
-#' @keywords likelihood
-#' @keywords linearization
-#' @export
-#' @importFrom Matrix t
-
-#TODO: Change n_par
-
-like_stable <- function(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw) {
-  amp_cov_par <- param[1:n_par[1]]
-  warp_cov_par <- param[(n_par[1] + 1):length(param)]
-
-  C <- warp_cov_fct(tw, warp_cov_par)
-  Cinv <- chol2inv(chol(C))
-
-  n <- length(r)
-  m <- sapply(r, length)
-
-  sq <- logdet <- 0
-  for (i in 1:n) {
-    ZZ <- Zis[[i]]
-    S <- amp_cov_fct(t[[i]], amp_cov_par)
-    V <- as.matrix(S + ZZ %*% Cinv %*% Matrix::t(ZZ))
-    rr <- r[[i]]
-    sq <- sq + as.numeric(t(rr) %*% solve(V, rr))
-    logdet <- logdet + determinant(V)$modulus
-  }
-  sigmahat <- 1/sum(m) * as.numeric(sq)
-  res <- sum(m) * log(sigmahat) + logdet
-
-  return(res)
-}
-
-
-
 #' Noise scale estimate from locally linearized likelihood function
 #'
 #' Computes the noise scale estimate from the linearized likelihood given the residual around a predicted warp and the corresponding Jacobians.
-#' @param param variance parameters.
-#' @param r residual.
-#' @param Zis list of Jacobians in the warps of the mean function around the given warp.
-#' @param Cinv inverse warp covariance.
+#' @inheritParams like
 #' @keywords likelihood
 #' @keywords linearization
 #' @export
-#' @examples
-#' #TODO
 
 
 sigmasq <- function(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw) {
@@ -149,37 +90,24 @@ sigmasq <- function(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw) {
 #' @param c B-spline coefficients.
 #' @param Ainv precision matrix for amplitude variation.
 #' @param Cinv precision matrix for the warping parameters.
-#' @param Boundary.knots boundary knots for the B-spline basis.
+#' @param kts anchor points for the B-spline basis used to model the functional parameter \eqn{\theta}.
 #' @keywords warping
 #' @keywords posterior
 #' @export
-#' @examples
-#' TODO
 
-#TODO: ROXYGEN USE PARAMETERS FROM LIKE
-
-posterior <- function(w, t, y, tw, c, Ainv, Cinv, kts, Boundary.knots = c(0, 1)) {
-  r <- y - bs(v(w, t, tw), knots = kts, Boundary.knots = Boundary.knots) %*% c
+posterior <- function(w, t, y, tw, c, Ainv, Cinv, kts) {
+  r <- y - bs(v(w, t, tw), knots = kts, Boundary.knots = c(0, 1)) %*% c
   return((t(r) %*% Ainv %*% r + t(w) %*% Cinv %*% w)[1])
 }
 
 #' Posterior of the data given the random warping parameters
 #'
 #' This function calculates the posterior of the data given the random warping parameters
-#' @param w warping parameters.
-#' @param t evaluation points.
-#' @param tw anchor points for the warping parameters.
-#' @param c B-spline coefficients.
-#' @param Ainv precision matrix for amplitude variation.
-#' @param Cinv precision matrix for the warping parameters.
-#' @param Boundary.knots boundary knots for the B-spline basis.
+#' @param dwarp Jaobian of the vector of observed warped points in the warping parameters.
+#' @inheritParams like
 #' @keywords warping
 #' @keywords posterior
 #' @export
-#' @examples
-#' TODO
-
-#TODO: ROXYGEN USE PARAMETERS FROM LIKE
 
 posterior_grad <- function(w, dwarp, t, y, tw, c, Ainv, Cinv, kts) {
   vt <- v(w, t, tw)
@@ -202,10 +130,10 @@ posterior_grad <- function(w, dwarp, t, y, tw, c, Ainv, Cinv, kts) {
 #' @keywords warping
 #' @keywords posterior
 #' @export
-#' @examples
-#' TODO
 
-# TODO: UPDATE, DON'T USE NOW!
+# TODO: UPDATE, DON'T USE IN CURRENT FORM!!
+# TODO: UPDATE DOCUMENTATION!!
+
 
 predict_warp_pyramid <- function(w, y, Ainv, t, tw, kts, warp_cov_par, warp_cov_fct, plevels = 5, beta0 = 1, start = 1, homeomorphic = TRUE, iter = c(10, 5)) {
   n_outer <- iter[1]

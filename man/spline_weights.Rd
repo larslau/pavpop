@@ -4,12 +4,12 @@
 \alias{spline_weights}
 \title{Estimate spline weights}
 \usage{
-spline_weights(y, tm, w, tw, Ainv, kts)
+spline_weights(y, t, w, tw, Ainv, kts)
 }
 \arguments{
 \item{y}{list of \eqn{n} functional observations.}
 
-\item{tm}{list of time points corresponding to y.}
+\item{t}{list of time points corresponding to y.}
 
 \item{w}{warping parameters.}
 
@@ -21,10 +21,6 @@ spline_weights(y, tm, w, tw, Ainv, kts)
 }
 \description{
 Estimate spline weights for given warps and covariances
-}
-\examples{
-t <- seq(0, 1, length = 10)
-plot(v(0.4, t, 0.5), type = 'b', pch = 19)
 }
 \keyword{warping}
 

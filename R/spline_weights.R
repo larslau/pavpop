@@ -9,9 +9,6 @@
 #' @param kts B-spline knots.
 #' @keywords warping
 #' @export
-#' @examples
-#' t <- seq(0, 1, length = 10)
-#' plot(v(0.4, t, 0.5), type = 'b', pch = 19)
 
 spline_weights <- function(y, t, w, tw, Ainv, kts) {
   n <- length(y)

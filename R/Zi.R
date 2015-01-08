@@ -5,13 +5,14 @@
 #' @param dvt Jacobian of the warping function for the given evaluation points.
 #' @param kts B-spline knots.
 #' @export
-#' @examples
-#' #TODO
 
 Zi <- function(t, dwarp, c, kts) {
     dwarp <- dwarp * ((bsd(t, knots = kts, Boundary.knots = c(0, 1)) %*% c)[, 1])
     return(dwarp)
 }
+
+
+# TODO: CLEAN bsd AND DOCUMENT!
 
 #' Spline basis derivative
 #'
@@ -23,9 +24,6 @@ Zi <- function(t, dwarp, c, kts) {
 #' @param intercept
 #' @param Boundary.knots
 #' @export
-#' @examples
-#' #TODO
-
 
 bsd <- function(x, df = NULL, knots = NULL, degree = 3, intercept = FALSE,
     Boundary.knots = range(x)) {

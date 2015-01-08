@@ -23,7 +23,4 @@ bsd(x, df = NULL, knots = NULL, degree = 3, intercept = FALSE,
 \description{
 Spline basis derivative.
 }
-\examples{
-#TODO
-}
 

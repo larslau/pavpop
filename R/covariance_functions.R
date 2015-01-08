@@ -1,13 +1,19 @@
+# TODO:
+# EXPLICITLY GENERATE INVERSE OF BROWNIAN COVARIANCES (+OTHERS?!)
+
+
+
 #' Generate Brownian covariances
 #'
 #' This function generates a Brownian motion/bridge covariance matrix corresponding to specified evaluation points.
 #' @param t evaluation points.
+#' @param tau scale parameter.
 #' @param type type of covariance, either 'motion' or 'bridge'.
 #' @keywords covariance
 #' @export
 #' @examples
 #' t <- seq(0, 1, length = 10)
-#' Brown_cov(t)
+#' Brown_cov(t, 1)
 
 Brownian_cov <- function(t, tau, type = 'motion') {
 	m <- length(t)
@@ -25,6 +31,7 @@ Brownian_cov <- function(t, tau, type = 'motion') {
 #'
 #' This function generates a Brownian motion covariance matrix corresponding to specified evaluation points.
 #' @param t evaluation points.
+#' @param tau scale parameter.
 #' @keywords covariance
 #' @export
 #' @examples
@@ -33,7 +40,7 @@ Brownian_cov <- function(t, tau, type = 'motion') {
 
 #TODO: UPDATE
 
-Brownian_motion_cov_fast <- function(t) {
+Brownian_motion_cov_fast <- function(t, tau = 1) {
 	m <- length(t)
 	C <- matrix(NA, m, m)
 
@@ -48,9 +55,8 @@ Brownian_motion_cov_fast <- function(t) {
 #'
 #' This function generates a Matern motion covariance matrix corresponding to specified evaluation points.
 #' @param t evaluation points.
-#' @param scale scale parameter.
-#' @param range range parameter.
-#' @param smoothness smoothness parameter.
+#' @param param parameter vector consisting of scale, range and smoothness.
+#' @param noise logical, should a diagonal matrix be added to the Matern covariance?
 #' @keywords covariance
 #' @export
 #' @examples
@@ -71,24 +77,3 @@ Matern_cov <- function(t, param = c(scale = 1, range = 1, smoothness = 2), noise
   return(S)
 }
 
-
-
-# t <- seq(0, 1, length = 100)
-# system.time(for(i in 1:10) Brown_cov(t))
-# system.time(for(i in 1:10) Brown_cov(t, 'bridge'))
-# system.time(for(i in 1:10) Brown_motion_cov_fast(t))
-# system.time(for(i in 1:10) Matern_cov(t, 1, 1, 1/2))
-
-
-# image(Brown_cov(t), useRaster = TRUE)
-# image(Brown_cov(t, 'bridge'), useRaster = TRUE)
-# image(Brown_motion_cov_fast(t), useRaster = TRUE)
-# image(Matern_cov(t, 1, 1, 1/2), useRaster = TRUE)
-
-
-#
-# TODO:
-# EXPLICITLY GENERATE INVERSE OF BROWNIAN COVARIANCES (+OTHERS?!)
-#
-#
-#
