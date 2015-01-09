@@ -25,7 +25,51 @@
 #' @keywords likelihood estimation
 #' @export
 #' @examples
-#' #TODO
+#' # Load female growth data from the Berkeley growth study
+#' t_orig <- fda::growth$age
+#' y <- fda::growth$hgtf
+#'
+#' m <- nrow(y)
+#' n <- ncol(y)
+#'
+#' # Construct velocities from finite differences
+#' y <- (y[c(2:m, m), ] - y) / (t_orig[c(2:m, m)] - t_orig)
+#' y[is.na(y)] <- 0
+#' theta <- rowMeans(y)
+#'
+#' t_range <- c(0, 19)
+#' t <- replicate(n, t_orig / t_range[2], simplify = FALSE)
+#' y <- lapply(1:n, function (x) y[, x])
+#'
+#' # Set up covariance functions
+#' warp_cov_par <- c(tau = 1)
+#' warp_cov_fct <- function(t, param) Brownian_cov(t, param, type = 'bridge')
+#'
+#' amp_cov_par <- c(scale = 1, range = 1)
+#' amp_cov_fct <- function(t, param) Matern_cov(t, c(param, 2), noise = TRUE)
+#'
+#' # Set up parametrization
+#' tw <- seq(0, 1, length = 7)[2:6]
+#' kts <- seq(0, 1, length = 12)[2:11]
+#'
+#' # Estimate in the model
+#' res <- estimate_generic(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct, kts, tw, iter = c(3, 3), homeomorphism = 'soft', like_optim_control = list(lower = rep(1e-3, 3), upper = c(10, 2, 2)))
+#'
+#' # Display data
+#' par(mfrow = c(1, 2))
+#'
+#' plot(t_orig, theta, ylim = range(sapply(y, range)), type = 'l', lwd = 2, lty = 2, main = 'Original growth velocities', xlab = 'Age', ylab = 'Growth velocity')
+#' for (i in 1:n) lines(t_orig, y[[i]], lwd = 0.2)
+#'
+#' basis <- bs(x = t[[1]], knots = kts, Boundary.knots = c(0, 1))
+#' plot(t_orig, basis %*% res$c, ylim = range(sapply(y, range)), type = 'l', lwd = 2, lty = 2, main = 'Warped growth velocities', xlab = 'Biological age', ylab = 'Growth velocity')
+#' for (i in 1:n) lines(t_range[2] * v(res$w[,i], t[[i]], tw), y[[i]], lwd = 0.2)
+#'
+#' # Predicted warping functions
+#' par(mfrow = c(1, 1))
+#' plot(t_orig, t_orig, type = 'l', lwd = 2, lty = 2, main = 'Warping functions', xlab = 'Age', ylab = 'Biological age')
+#' for (i in 1:n) lines(t_orig, t_range[2] * v(res$w[,i], t[[i]], tw), lwd = 0.2)
+
 
 estimate_generic <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct, kts, tw, iter = c(5, 5), use_warp_gradient = FALSE, homeomorphisms = 'no', like_optim_control = list()) {
   nouter <- iter[1]

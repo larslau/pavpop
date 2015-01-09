@@ -13,7 +13,7 @@
 #' @export
 #' @examples
 #' t <- seq(0, 1, length = 10)
-#' Brown_cov(t, 1)
+#' Brownian_cov(t, 1)
 
 Brownian_cov <- function(t, tau, type = 'motion') {
 	m <- length(t)
@@ -36,7 +36,7 @@ Brownian_cov <- function(t, tau, type = 'motion') {
 #' @export
 #' @examples
 #' t <- seq(0, 1, length = 10)
-#' Brown_motion_cov_fast(t)
+#' Brownian_motion_cov_fast(t)
 
 #TODO: UPDATE
 
@@ -61,7 +61,7 @@ Brownian_motion_cov_fast <- function(t, tau = 1) {
 #' @export
 #' @examples
 #' t <- seq(0, 1, length = 10)
-#' Matern_cov(t, 1, 1, 1/2)
+#' Matern_cov(t, param = c(1, 1, 1/2))
 
 Matern_cov <- function(t, param = c(scale = 1, range = 1, smoothness = 2), noise = TRUE) {
   scale <- param[1]
