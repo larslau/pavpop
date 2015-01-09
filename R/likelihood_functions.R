@@ -96,7 +96,10 @@ sigmasq <- function(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw) {
 #' @export
 
 posterior <- function(w, t, y, tw, c, Ainv, Cinv, kts) {
-  r <- y - bs(v(w, t, tw), knots = kts, Boundary.knots = c(0, 1)) %*% c
+  vt <- v(w, t, tw)
+  vt[vt < 0] <- 0
+  vt[vt > 1] <- 1
+  r <- y - bs(vt, knots = kts, Boundary.knots = c(0, 1)) %*% c
   return((t(r) %*% Ainv %*% r + t(w) %*% Cinv %*% w)[1])
 }
 
@@ -111,6 +114,8 @@ posterior <- function(w, t, y, tw, c, Ainv, Cinv, kts) {
 
 posterior_grad <- function(w, dwarp, t, y, tw, c, Ainv, Cinv, kts) {
   vt <- v(w, t, tw)
+  vt[vt < 0] <- 0
+  vt[vt > 1] <- 1
   r <- bs(vt, knots = kts, Boundary.knots = c(0, 1)) %*% c - y
   theta_d <- bsd(vt, knots = kts, Boundary.knots = c(0, 1)) %*% c
   grad <- 2 * t(r) %*% Ainv %*% (dwarp * theta_d[, 1])

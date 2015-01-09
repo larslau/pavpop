@@ -1,4 +1,3 @@
-# TODO: WARPS WITH/WITHOUT GRADIENT
 # TODO: PYRAMID SCHEME! (2 types)
 # TODO: AUTOMATICALLY INITIALIZE!
 # TODO: LATER: MAKE LARGE WARPS POSSIBLE (AND CHEAP)
@@ -53,7 +52,7 @@
 #' kts <- seq(0, 1, length = 12)[2:11]
 #'
 #' # Estimate in the model
-#' res <- estimate_generic(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct, kts, tw, iter = c(3, 3), homeomorphism = 'soft', like_optim_control = list(lower = rep(1e-3, 3), upper = c(10, 2, 2)))
+#' res <- estimate_generic(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct, kts, tw, homeomorphism = 'soft', like_optim_control = list(lower = rep(1e-3, 3), upper = c(10, 2, 2)))
 #'
 #' # Display data
 #' par(mfrow = c(1, 2))
@@ -72,7 +71,7 @@
 
 
 estimate_generic <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct, kts, tw, iter = c(5, 5), use_warp_gradient = FALSE, homeomorphisms = 'no', like_optim_control = list()) {
-  nouter <- iter[1]
+  nouter <- iter[1] + 1
   ninner <- iter[2]
 
   # Set size parameters
@@ -94,7 +93,6 @@ estimate_generic <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_
   }
   # Update m with cleaned data
   m <- sapply(y, length)
-
 
   # Initialize warp parameters
   w <- array(0, dim = c(mw, n))
@@ -122,11 +120,11 @@ estimate_generic <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_
 
   for (iouter in 1:nouter) {
     # Outer loop
-    cat(iouter, ':\t')
+    if (ioter !- nouter) cat(iouter, ':\t')
 
     for (iinner in 1:ninner) {
       # Inner loop
-      cat(iinner, '\t')
+      if (ioter !- nouter) cat(iinner, '\t')
 
       # Predict warping parameters for all functional samples
       if (homeomorphisms == 'hard') {
@@ -187,7 +185,7 @@ estimate_generic <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_
       sigma <- sqrt(sigmasq(c(amp_cov_par, warp_cov_par), c(n_par_amp, n_par_warp), r, Zis, amp_cov_fct, warp_cov_fct, t, tw))
     }
 
-    cat(':\t', param, '\n')
+    if (ioter !- nouter) cat(':\t', param, '\n')
   }
   return(list(c = c, w = w, amp_cov_par = amp_cov_par, warp_cov_par = warp_cov_par, sigma = sigma))
 }
