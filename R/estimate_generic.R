@@ -45,14 +45,14 @@
 #' warp_cov_fct <- function(t, param) Brownian_cov(t, param, type = 'bridge')
 #'
 #' amp_cov_par <- c(scale = 1, range = 1)
-#' amp_cov_fct <- function(t, param) Matern_cov(t, c(param, 2), noise = TRUE)
+#' amp_cov_fct <- function(t, param) Matern_cov(t, c(param, 1), noise = TRUE)
 #'
 #' # Set up parametrization
 #' tw <- seq(0, 1, length = 7)[2:6]
 #' kts <- seq(0, 1, length = 12)[2:11]
 #'
 #' # Estimate in the model
-#' res <- estimate_generic(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct, kts, tw, homeomorphism = 'soft', like_optim_control = list(lower = rep(1e-3, 3), upper = c(10, 2, 2)))
+#' res <- estimate_generic(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct, kts, tw, iter = c(3, 5), homeomorphism = 'soft', like_optim_control = list(lower = rep(1e-3, 3), upper = c(10, 2, 2)))
 #'
 #' # Display data
 #' par(mfrow = c(1, 2))

@@ -57,7 +57,7 @@ y <- lapply(1:n, function (x) y[, x])
 warp_cov_par <- c(tau = 1)
 warp_cov_fct <- function(t, param) Brownian_cov(t, param, type = 'bridge')
 
-amp_cov_par <- c(scale = 1, range = 1)
+amp_cov_par <- c(scale = 2, range = 0.5)
 amp_cov_fct <- function(t, param) Matern_cov(t, c(param, 2), noise = TRUE)
 
 # Set up parametrization
