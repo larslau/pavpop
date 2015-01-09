@@ -45,7 +45,7 @@
 #' warp_cov_fct <- function(t, param) Brownian_cov(t, param, type = 'bridge')
 #'
 #' amp_cov_par <- c(scale = 1, range = 1)
-#' amp_cov_fct <- function(t, param) Matern_cov(t, c(param, 1), noise = TRUE)
+#' amp_cov_fct <- function(t, param) Matern_cov(t, c(param, 2), noise = TRUE)
 #'
 #' # Set up parametrization
 #' tw <- seq(0, 1, length = 7)[2:6]
