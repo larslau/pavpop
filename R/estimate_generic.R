@@ -119,10 +119,10 @@ estimate_generic <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_
     # Check wheter the final outer loop has been reached
     if (iouter != nouter) {
       # Estimate parameters using locally linearized likelihood
-      lower  <- if (is.null(like_optim_control$lower)) rep(0, n_par_amp) else like_optim_control$lower
-      upper  <- if (is.null(like_optim_control$upper)) rep(Inf, n_par_amp) else like_optim_control$upper
+      lower  <- if (is.null(like_optim_control$lower)) rep(0, n_par_amp + n_par_warp) else like_optim_control$lower
+      upper  <- if (is.null(like_optim_control$upper)) rep(Inf, n_par_amp + n_par_warp) else like_optim_control$upper
       method <- if (is.null(like_optim_control$method)) "L-BFGS-B" else like_optim_control$method
-      ndeps <- if (is.null(like_optim_control$ndeps)) rep(1e-3, n_par_amp) else like_optim_control$ndeps
+      ndeps <- if (is.null(like_optim_control$ndeps)) rep(1e-3, n_par_amp + n_par_warp) else like_optim_control$ndeps
 
       param <- optim(c(amp_cov_par, warp_cov_par), like, n_par = c(n_par_amp, n_par_warp), r = r, Zis = Zis, amp_cov_fct = amp_cov_fct, warp_cov_fct = warp_cov_fct, t = t, tw = tw, method = method, lower = lower, upper = upper, control = list(ndeps = ndeps, maxit = 10))$par
 
