@@ -65,7 +65,7 @@ tw <- seq(0, 1, length = 7)[2:6]
 kts <- seq(0, 1, length = 12)[2:11]
 
 # Estimate in the model
-res <- estimate_generic(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct, kts, tw, iter = c(3, 3), homeomorphism = 'soft', like_optim_control = list(lower = rep(1e-3, 3), upper = c(10, 2, 2)))
+res <- estimate_generic(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct, kts, tw, homeomorphism = 'soft', like_optim_control = list(lower = rep(1e-3, 3), upper = c(10, 2, 2)))
 
 # Display data
 par(mfrow = c(1, 2))

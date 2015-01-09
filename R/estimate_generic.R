@@ -1,9 +1,9 @@
 # TODO: PYRAMID SCHEME! (2 types)
 # TODO: AUTOMATICALLY INITIALIZE!
-# TODO: LATER: MAKE LARGE WARPS POSSIBLE (AND CHEAP)
 # TODO: MAKE HARD HOMEOMORPHIC CONSTRAINTS POSSIBLE
-# TODO: LATER: ALLOW LARGE m (USING SPARSE CHOL)
-# TODO: LATER: ALLOW SHIFT WARPS
+# TODO LATER: MAKE LARGE WARPS POSSIBLE (AND CHEAP)
+# TODO LATER: ALLOW LARGE m (USING SPARSE CHOL)
+# TODO LATER: ALLOW SHIFT WARPS
 
 
 #' Estimate parameters and predict warps for curve data
@@ -120,11 +120,11 @@ estimate_generic <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_
 
   for (iouter in 1:nouter) {
     # Outer loop
-    if (ioter !- nouter) cat(iouter, ':\t')
+    if (ioter != nouter) cat(iouter, ':\t')
 
     for (iinner in 1:ninner) {
       # Inner loop
-      if (ioter !- nouter) cat(iinner, '\t')
+      if (ioter != nouter) cat(iinner, '\t')
 
       # Predict warping parameters for all functional samples
       if (homeomorphisms == 'hard') {
@@ -185,7 +185,7 @@ estimate_generic <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_
       sigma <- sqrt(sigmasq(c(amp_cov_par, warp_cov_par), c(n_par_amp, n_par_warp), r, Zis, amp_cov_fct, warp_cov_fct, t, tw))
     }
 
-    if (ioter !- nouter) cat(':\t', param, '\n')
+    if (ioter != nouter) cat(':\t', param, '\n')
   }
   return(list(c = c, w = w, amp_cov_par = amp_cov_par, warp_cov_par = warp_cov_par, sigma = sigma))
 }
