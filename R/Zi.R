@@ -7,8 +7,10 @@
 #' @export
 
 Zi <- function(t, dwarp, c, kts) {
-    dwarp <- dwarp * ((bsd(t, knots = kts, Boundary.knots = c(0, 1)) %*% c)[, 1])
-    return(dwarp)
+  basis <- bsd(t, knots = kts, Boundary.knots = c(0, 1))
+  if (ncol(basis) + 1 == length(c)) c <- c[-1]
+  dwarp <- dwarp * ((basis %*% c)[, 1])
+  return(dwarp)
 }
 
 

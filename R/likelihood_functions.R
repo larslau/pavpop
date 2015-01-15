@@ -138,7 +138,7 @@ posterior_grad <- function(w, dwarp, t, y, tw, c, Ainv, Cinv, kts, intercept = F
 
 # TODO: UPDATE, DON'T USE IN CURRENT FORM!!
 # TODO: UPDATE DOCUMENTATION!!
-
+# TODO: DOES NOT WORK WITH SPLINE DERIVATIVE AND INTERCEPT
 
 predict_warp_pyramid <- function(w, y, Ainv, t, tw, kts, warp_cov_par, warp_cov_fct, plevels = 5, beta0 = 1, start = 1, homeomorphic = TRUE, iter = c(10, 5), intercept = FALSE) {
   n_outer <- iter[1]
