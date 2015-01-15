@@ -95,11 +95,11 @@ sigmasq <- function(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw) {
 #' @keywords posterior
 #' @export
 
-posterior <- function(w, t, y, tw, c, Ainv, Cinv, kts) {
+posterior <- function(w, t, y, tw, c, Ainv, Cinv, kts, intercept = FALSE) {
   vt <- v(w, t, tw)
   vt[vt < 0] <- 0
   vt[vt > 1] <- 1
-  r <- y - bs(vt, knots = kts, Boundary.knots = c(0, 1)) %*% c
+  r <- y - bs(vt, knots = kts, Boundary.knots = c(0, 1), intercept = intercept) %*% c
   return((t(r) %*% Ainv %*% r + t(w) %*% Cinv %*% w)[1])
 }
 
@@ -112,11 +112,11 @@ posterior <- function(w, t, y, tw, c, Ainv, Cinv, kts) {
 #' @keywords posterior
 #' @export
 
-posterior_grad <- function(w, dwarp, t, y, tw, c, Ainv, Cinv, kts) {
+posterior_grad <- function(w, dwarp, t, y, tw, c, Ainv, Cinv, kts, intercept = FALSE) {
   vt <- v(w, t, tw)
   vt[vt < 0] <- 0
   vt[vt > 1] <- 1
-  r <- bs(vt, knots = kts, Boundary.knots = c(0, 1)) %*% c - y
+  r <- bs(vt, knots = kts, Boundary.knots = c(0, 1), intercept = intercept) %*% c - y
   theta_d <- bsd(vt, knots = kts, Boundary.knots = c(0, 1)) %*% c
   grad <- 2 * t(r) %*% Ainv %*% (dwarp * theta_d[, 1])
   return(as.numeric(grad + 2 * w %*% Cinv))
@@ -140,7 +140,7 @@ posterior_grad <- function(w, dwarp, t, y, tw, c, Ainv, Cinv, kts) {
 # TODO: UPDATE DOCUMENTATION!!
 
 
-predict_warp_pyramid <- function(w, y, Ainv, t, tw, kts, warp_cov_par, warp_cov_fct, plevels = 5, beta0 = 1, start = 1, homeomorphic = TRUE, iter = c(10, 5)) {
+predict_warp_pyramid <- function(w, y, Ainv, t, tw, kts, warp_cov_par, warp_cov_fct, plevels = 5, beta0 = 1, start = 1, homeomorphic = TRUE, iter = c(10, 5), intercept = FALSE) {
   n_outer <- iter[1]
   n_inner <- iter[2]
   n <- length(y)
@@ -181,12 +181,12 @@ predict_warp_pyramid <- function(w, y, Ainv, t, tw, kts, warp_cov_par, warp_cov_
     kappa <- 1.5
     for (outer in 1:n_outer) {
       reg_Matrix <- solve(diag(1, nwp, nwp) + 1 / beta * Cp_inv)
-      c <- spline_weights(y, t, w_pred, twp, bdiag(Ainv), kts)
+      c <- spline_weights(y, t, w_pred, twp, bdiag(Ainv), kts, intercept = intercept)
       for (inner in 1:n_inner) {
         for (i in 1:n) { #TODO: CHECK THIS CODE!!!
           t_warped <- v(w_pred[, i], t[[i]], twp)
           # The basis construction is also done in spline_weights
-          wbasis <- bs(t_warped, knots = kts, Boundary.knots = c(0, 1))
+          wbasis <- bs(t_warped, knots = kts, Boundary.knots = c(0, 1), intercept = intercept)
           wdbasis <- bsd(t_warped, knots = kts, Boundary.knots = c(0, 1))
           thetahat_warped <- wbasis %*% c
           thetahat_warped_d <- wdbasis %*% c

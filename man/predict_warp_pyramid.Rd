@@ -6,7 +6,7 @@
 \usage{
 predict_warp_pyramid(w, y, Ainv, t, tw, kts, warp_cov_par, warp_cov_fct,
   plevels = 5, beta0 = 1, start = 1, homeomorphic = TRUE, iter = c(10,
-  5))
+  5), intercept = FALSE)
 }
 \arguments{
 \item{w}{warping parameters.}

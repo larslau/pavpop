@@ -10,12 +10,12 @@
 #' @keywords warping
 #' @export
 
-spline_weights <- function(y, t, w, tw, Ainv, kts) {
+spline_weights <- function(y, t, w, tw, Ainv, kts, intercept = FALSE) {
   n <- length(y)
   btime <- sapply(1:n, function(i) v(w[, i], t[[i]], tw))
   btime <- as.numeric(unlist(btime))
 
-  basis <- bs(btime, knots = kts, Boundary.knots = c(0, 1))[]
+  basis <- bs(btime, knots = kts, Boundary.knots = c(0, 1), intercept = intercept)[]
 
   c <- as.numeric(solve(t(basis) %*% Ainv %*% basis) %*% t(basis) %*% Ainv %*% unlist(y))
 

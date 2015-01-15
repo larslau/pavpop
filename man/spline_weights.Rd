@@ -4,7 +4,7 @@
 \alias{spline_weights}
 \title{Estimate spline weights}
 \usage{
-spline_weights(y, t, w, tw, Ainv, kts)
+spline_weights(y, t, w, tw, Ainv, kts, intercept = FALSE)
 }
 \arguments{
 \item{y}{list of \eqn{n} functional observations.}

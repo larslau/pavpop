@@ -4,7 +4,7 @@
 \alias{posterior_grad}
 \title{Posterior of the data given the random warping parameters}
 \usage{
-posterior_grad(w, dwarp, t, y, tw, c, Ainv, Cinv, kts)
+posterior_grad(w, dwarp, t, y, tw, c, Ainv, Cinv, kts, intercept = FALSE)
 }
 \arguments{
 \item{dwarp}{Jaobian of the vector of observed warped points in the warping parameters.}

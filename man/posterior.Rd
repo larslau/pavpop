@@ -4,7 +4,7 @@
 \alias{posterior}
 \title{Posterior of the data given the random warping parameters}
 \usage{
-posterior(w, t, y, tw, c, Ainv, Cinv, kts)
+posterior(w, t, y, tw, c, Ainv, Cinv, kts, intercept = FALSE)
 }
 \arguments{
 \item{w}{warping parameters.}

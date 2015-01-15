@@ -70,7 +70,7 @@
 #' for (i in 1:n) lines(t_orig, t_range[2] * v(res$w[,i], t[[i]], tw), lwd = 0.2)
 
 
-estimate_generic <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct, kts, tw, iter = c(5, 5), use_warp_gradient = FALSE, homeomorphisms = 'no', like_optim_control = list()) {
+estimate_generic <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct, kts, tw, intercept = FALSE, iter = c(5, 5), use_warp_gradient = FALSE, homeomorphisms = 'no', like_optim_control = list()) {
   nouter <- iter[1] + 1
   ninner <- iter[2]
 
@@ -109,7 +109,7 @@ estimate_generic <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_
   Cinv <- solve(C)
 
   # Estimate spline weights
-  c <- spline_weights(y, t, w, tw, bdiag(Ainv), kts)
+  c <- spline_weights(y, t, w, tw, bdiag(Ainv), kts, intercept = intercept)
 
   # Construct warp derivative
   dwarp <- list()
@@ -135,16 +135,16 @@ estimate_generic <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_
           gr <- NULL
           warp_optim_method <- 'Nelder-Mead'
           if (use_warp_gradient) {
-            gr <- function(w, t, y, tw, c, Ainv, Cinv, kts) posterior_grad(w, dwarp[[i]], t, y, tw, c, Ainv, Cinv, kts)
+            gr <- function(w, t, y, tw, c, Ainv, Cinv, kts, intercept) posterior_grad(w, dwarp[[i]], t, y, tw, c, Ainv, Cinv, kts, intercept)
             warp_optim_method <- 'BFGS'
           }
-          w[, i] <- optim(par = w[,i], fn = posterior, gr = gr, method = warp_optim_method, t = t[[i]], y = y[[i]], tw = tw, c = c, Ainv = Ainv[[i]], Cinv = Cinv, kts = kts)$par
+          w[, i] <- optim(par = w[,i], fn = posterior, gr = gr, method = warp_optim_method, t = t[[i]], y = y[[i]], tw = tw, c = c, Ainv = Ainv[[i]], Cinv = Cinv, kts = kts, intercept = intercept)$par
           if (homeomorphisms == 'soft') w[, i] <- make_homeo(w[, i], tw)
         }
       }
 
       # Update spline weights
-      c <- spline_weights(y, t, w, tw, bdiag(Ainv), kts)
+      c <- spline_weights(y, t, w, tw, bdiag(Ainv), kts, intercept = intercept)
     }
 
     # Likelihood estimation of parameters (outer loop)
@@ -155,7 +155,7 @@ estimate_generic <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_
     for (i in 1:n) {
       twarped <- v(w[, i], t[[i]], tw)
       Zis[[i]] <- Zi(twarped, dwarp[[i]], c, kts)
-      r[[i]] <- as.numeric(r[[i]] - bs(twarped, knots = kts, Boundary.knots = c(0, 1)) %*% c + Zis[[i]] %*% w[,i])
+      r[[i]] <- as.numeric(r[[i]] - bs(twarped, knots = kts, Boundary.knots = c(0, 1), intercept = intercept) %*% c + Zis[[i]] %*% w[,i])
     }
 
     # Check wheter the final outer loop has been reached

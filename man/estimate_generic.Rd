@@ -5,7 +5,7 @@
 \title{Estimate parameters and predict warps for curve data}
 \usage{
 estimate_generic(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct,
-  kts, tw, iter = c(5, 5), use_warp_gradient = FALSE,
+  kts, tw, intercept = FALSE, iter = c(5, 5), use_warp_gradient = FALSE,
   homeomorphisms = "no", like_optim_control = list())
 }
 \arguments{
