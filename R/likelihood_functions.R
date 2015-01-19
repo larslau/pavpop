@@ -95,8 +95,8 @@ sigmasq <- function(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw) {
 #' @keywords posterior
 #' @export
 
-posterior <- function(w, t, y, tw, c, Ainv, Cinv, kts, intercept = FALSE) {
-  vt <- v(w, t, tw)
+posterior <- function(w, t, y, tw, c, Ainv, Cinv, kts, intercept = FALSE, smooth_warp = FALSE) {
+  vt <- v(w, t, tw, smooth = smooth_warp)
   vt[vt < 0] <- 0
   vt[vt > 1] <- 1
   r <- y - bs(vt, knots = kts, Boundary.knots = c(0, 1), intercept = intercept) %*% c

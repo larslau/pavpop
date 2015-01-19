@@ -4,7 +4,7 @@
 \alias{v}
 \title{Evaluate warping function given weights}
 \usage{
-v(w, t, tw)
+v(w, t, tw, smooth = FALSE)
 }
 \arguments{
 \item{w}{warping parameters.}
@@ -12,6 +12,8 @@ v(w, t, tw)
 \item{t}{evaluation points.}
 
 \item{tw}{anchor points for the warping parameters.}
+
+\item{smooth}{logical. Should warping function be based on a monotonic cubic spline?}
 }
 \description{
 This function evaluates the warping function corresponding to a specified set of warping parameters at a set of evaluation points using linear interpolation.

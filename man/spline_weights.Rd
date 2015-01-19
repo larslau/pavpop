@@ -4,7 +4,8 @@
 \alias{spline_weights}
 \title{Estimate spline weights}
 \usage{
-spline_weights(y, t, w, tw, Ainv, kts, intercept = FALSE)
+spline_weights(y, t, w, tw, Ainv, kts, intercept = FALSE,
+  smooth_warp = FALSE)
 }
 \arguments{
 \item{y}{list of \eqn{n} functional observations.}
@@ -18,6 +19,8 @@ spline_weights(y, t, w, tw, Ainv, kts, intercept = FALSE)
 \item{Ainv}{global precision matrix for amplitude variation.}
 
 \item{kts}{B-spline knots.}
+
+\item{smooth_warp}{logical. Should a smooth warping function be used?}
 }
 \description{
 Estimate spline weights for given warps and covariances

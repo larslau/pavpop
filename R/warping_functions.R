@@ -4,14 +4,25 @@
 #' @param w warping parameters.
 #' @param t evaluation points.
 #' @param tw anchor points for the warping parameters.
+#' @param smooth logical. Should warping function be based on a monotonic cubic spline?
 #' @keywords warping
 #' @export
 #' @examples
 #' t <- seq(0, 1, length = 10)
 #' plot(t, v(0.4, t, 0.5), type = 'l', pch = 19)
 
-v <- function(w, t, tw) {
-  t + approx(c(0, tw, 1), c(0, w, 0), xout = t, rule = 2)$y
+v <- function(w, t, tw, smooth = FALSE) {
+  if (smooth) {
+    # Make possible argument
+    x <- c(0, tw, 1)
+    y <- c(0, tw + w, 1)
+    if (!all(diff(y) > 0)) {
+      y <- c(0, tw + make_homeo(w, tw, epsilon = 0.2), 1)
+    }
+    return(spline(x, y, xout = t, method = 'hyman')$y)
+  } else {
+    return(t + approx(c(0, tw, 1), c(0, w, 0), xout = t, rule = 2)$y)
+  }
 }
 
 #' Derivative of piecewise linear warping function warping
