@@ -6,8 +6,12 @@
 #' @param kts B-spline knots.
 #' @export
 
-Zi <- function(t, dwarp, c, kts) {
-  basis <- bsd(t, knots = kts, Boundary.knots = c(0, 1))
+Zi <- function(t, dwarp, c, kts, increasing = FALSE) {
+  if (!increasing) {
+    basis <- bsd(t, knots = kts, Boundary.knots = c(0, 1))
+  } else {
+    basis <- t(Ispline(t + 1e-5, 3, knots = kts) - Ispline(t - 1e-5, 3, knots = kts)) / 2e-5
+  }
   if (ncol(basis) + 1 == length(c)) c <- c[-1]
   dwarp <- dwarp * ((basis %*% c)[, 1])
   return(dwarp)

@@ -50,6 +50,23 @@ Brownian_motion_cov_fast <- function(t, tau = 1) {
 	return(C)
 }
 
+# require(Rmpfr)
+# x <- t[[2]]
+# jn(2, x)
+# yn(2, x)
+# BesselK(x, as.integer(2))
+#
+# Matern <- function (d, scale = 1, range = 1, alpha = 1/range, smoothness = 0.5,
+#           nu = smoothness, phi = scale)
+# {
+#   if (any(d < 0))
+#     stop("distance argument must be nonnegative")
+#   d <- d * alpha
+#   d[d == 0] <- 1e-10
+#   con <- (2^(nu - 1)) * gamma(nu)
+#   con <- 1/con
+#   return(phi * con * (d^nu) * BesselK(d, nu, expon.scaled = FALSE))
+# }
 
 #' Generate Matern plus measurement noise covariances
 #'
@@ -70,9 +87,12 @@ Matern_cov <- function(t, param = c(scale = 1, range = 1, smoothness = 2), noise
   m <- length(t)
   S <- diag(x = Matern(0, scale = scale, range = range, smoothness = smoothness) + noise, nrow = m)
   i <- 1
-  while (i < m) {
-    S[cbind(1:(m - i), (1 + i):m)] <- S[cbind((1 + i):m, 1:(m - i))] <- Matern(t[i + 1], scale = scale, range = range, smoothness = smoothness)
-    i <- i + 1
+#   while (i < m) {
+#     S[cbind(1:(m - i), (1 + i):m)] <- S[cbind((1 + i):m, 1:(m - i))] <- Matern(abs(t[1:(m - i)] - t[(1 + i):m]), scale = scale, range = range, smoothness = smoothness)
+#     i <- i + 1
+#   }
+  for (i in 1:(m - 1)) {
+    S[i, (i + 1):m] <- S[(i + 1):m, i] <- Matern(abs(t[[i]] - t[(1 + i):m]), scale = scale, range = range, smoothness = smoothness)
   }
   return(S)
 }

@@ -19,6 +19,7 @@
 like <- function(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw) {
   amp_cov_par <- param[1:n_par[1]]
   warp_cov_par <- param[(n_par[1] + 1):length(param)]
+
   C <- warp_cov_fct(tw, warp_cov_par)
   Cinv <- chol2inv(chol(C))
 
@@ -95,11 +96,17 @@ sigmasq <- function(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw) {
 #' @keywords posterior
 #' @export
 
-posterior <- function(w, t, y, tw, c, Ainv, Cinv, kts, intercept = FALSE, smooth_warp = FALSE) {
+posterior <- function(w, t, y, tw, c, Ainv, Cinv, kts, intercept = FALSE, smooth_warp = FALSE, increasing = FALSE) {
   vt <- v(w, t, tw, smooth = smooth_warp)
   vt[vt < 0] <- 0
   vt[vt > 1] <- 1
-  r <- y - bs(vt, knots = kts, Boundary.knots = c(0, 1), intercept = intercept) %*% c
+  if (!increasing) {
+    basis <- bs(vt, knots = kts, Boundary.knots = c(0, 1), intercept = intercept)
+  } else {
+    basis <- t(Ispline(vt, 3, kts))
+    if (intercept) basis <- cbind(1, basis)
+  }
+  r <- y - basis %*% c
   return((t(r) %*% Ainv %*% r + t(w) %*% Cinv %*% w)[1])
 }
 
