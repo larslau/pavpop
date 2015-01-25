@@ -5,7 +5,7 @@
 \title{Estimate spline weights}
 \usage{
 spline_weights(y, t, w, tw, Ainv, kts, intercept = FALSE,
-  smooth_warp = FALSE)
+  smooth_warp = FALSE, increasing = FALSE)
 }
 \arguments{
 \item{y}{list of \eqn{n} functional observations.}

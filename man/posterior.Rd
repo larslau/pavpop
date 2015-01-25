@@ -5,7 +5,7 @@
 \title{Posterior of the data given the random warping parameters}
 \usage{
 posterior(w, t, y, tw, c, Ainv, Cinv, kts, intercept = FALSE,
-  smooth_warp = FALSE)
+  smooth_warp = FALSE, increasing = FALSE)
 }
 \arguments{
 \item{w}{warping parameters.}

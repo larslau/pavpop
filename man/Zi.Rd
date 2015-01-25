@@ -4,7 +4,7 @@
 \alias{Zi}
 \title{Jacobian of warped B-spline function}
 \usage{
-Zi(t, dwarp, c, kts)
+Zi(t, dwarp, c, kts, increasing = FALSE)
 }
 \arguments{
 \item{t}{(warped) evaluation points.}
