@@ -3,6 +3,6 @@ Title: Registration of curves with random shape variation
 Version: 0.1
 Authors@R: "Lars Lau Raket <larslau@math.ku.dk> [aut, cre]"
 Description: The package contains methods for doing likelihood estimation in a mixed effects model for curve data where the random effects model amplitude and phase variation.
-Depends: R (>= 3.1.2), Matrix, spam, fields, splines, fda, PCDSpline, quadprog
+Depends: R (>= 3.0.0), Matrix, spam, fields, splines, fda, PCDSpline, quadprog
 License: GPL-3.0
 LazyData: true
