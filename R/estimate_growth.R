@@ -25,7 +25,7 @@
 #' @export
 
 
-estimate_growth <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct, kts, tw, intercept = FALSE, iter = c(5, 5), use_warp_gradient = FALSE, homeomorphisms = 'no', like_optim_control = list()) {
+estimate_growth <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct, kts, tw, intercept = FALSE, iter = c(5, 5), use_warp_gradient = FALSE, homeomorphisms = 'no', like_optim_control = list(), silent = FALSE) {
   nouter <- iter[1] + 1
   ninner <- iter[2]
 
@@ -68,11 +68,11 @@ estimate_growth <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_c
 
   for (iouter in 1:nouter) {
     # Outer loop
-    if (iouter != nouter) cat(iouter, ':\t')
+    if (iouter != nouter & !silent) cat(iouter, ':\t')
 
     for (iinner in 1:ninner) {
       # Inner loop
-      if (iouter != nouter) cat(iinner, '\t')
+      if (iouter != nouter & !silent) cat(iinner, '\t')
 
       # Predict warping parameters for all functional samples
       if (homeomorphisms == 'hard') {
@@ -145,7 +145,7 @@ estimate_growth <- function(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_c
       like <- like(c(amp_cov_par, warp_cov_par), c(n_par_amp, n_par_warp), r, Zis, amp_cov_fct, warp_cov_fct, t, tw)
     }
 
-    if (iouter != nouter) cat(':\t', param, '\n')
+    if (iouter != nouter & !silent) cat(':\t', param, '\n')
   }
   return(list(c = c, w = w, amp_cov_par = amp_cov_par, warp_cov_par = warp_cov_par, sigma = sigma, like = like))
 }
