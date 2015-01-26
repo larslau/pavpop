@@ -21,8 +21,16 @@ spline_weights <- function(y, t, w, tw, Ainv, kts, intercept = FALSE, smooth_war
     c <- as.numeric(solve(t(basis) %*% Ainv %*% basis) %*% t(basis) %*% Ainv %*% unlist(y))
   } else {
     basis <- t(Ispline(btime, 3, knots = kts))
+    indices <- 1:(ncol(basis) + intercept)
+    for (i in 1:ncol(basis)) {
+      if (length(unique(basis[, i])) <= 3) { # Numerical precision hack. Should be == 1
+        indices <- indices[indices != i + intercept]
+      }
+    }
     if (intercept) basis <- cbind(1, basis)
-    c <- solve.QP(Dmat = t(basis) %*% Ainv %*% basis,
+    c <- rep(0, ncol(basis))
+    basis <- basis[,indices]
+    c[indices] <- solve.QP(Dmat = t(basis) %*% Ainv %*% basis,
                   dvec = Matrix::t(t(unlist(y)) %*% Ainv %*% basis),
                   Amat = diag(nrow = ncol(basis)))$solution
   }
