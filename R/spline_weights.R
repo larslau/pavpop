@@ -23,7 +23,11 @@ spline_weights <- function(y, t, w, tw, Ainv, kts, intercept = FALSE, smooth_war
     basis <- t(Ispline(btime, 3, knots = kts))
     indices <- 1:(ncol(basis) + intercept)
     for (i in 1:ncol(basis)) {
+<<<<<<< HEAD
       if (length(unique(basis[, i])) <= 3) { # Numerical precision hack. Should be == 1 in an ideal world
+=======
+      if (length(unique(basis[, i])) <= 3) { # Numerical precision hack. Should be == 1
+>>>>>>> FETCH_HEAD
         indices <- indices[indices != i + intercept]
       }
     }
