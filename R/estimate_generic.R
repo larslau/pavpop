@@ -14,10 +14,11 @@
 #' @param amp_cov_fct amplitude covariance matrix function.
 #' @param warp_cov_par warp covariance parameters.
 #' @param warp_cov_fct warp covariance matrix function.
-#' @param kts anchor points for the B-spline basis used to model \eqn{\theta}.
+#' @param kts anchor points for the spline basis used to model \eqn{\theta}.
 #' @param tw anchor points for the warping parameters.
+#' @param intercept should the basis include an intercept (default is \code{FALSE})
 #' @param iter two-dimensional numeric consisting of number of outer and inner iterations.
-#' @param use_warp_gradient logical. Should warp prediction use gradient based optimization?
+#' @param use_warp_gradient logical. Should warp prediction use the exact gradient for based optimization?
 #' @param homeomorphisms should warps be constrained to be homeomorphisms? Options are: \code{'no'}, \code{'soft'} or \code{'hard'}. 'soft' will project the prediction onto the space of homeomorphisms after each prediction. 'hard' will do the optimiziation in the constrained space (not implemented yet!).
 #' @param like_optim_control list of control options for likelihood optimization. Parameters are given as \code{c(amp_cov_par, warp_cov_par)} and options include lower, upper, method, ndev (see \code{\link[stats::optim]{optim}}).
 #' @keywords likelihood estimation

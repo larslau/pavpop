@@ -21,13 +21,15 @@ estimate_generic(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct,
 
 \item{warp_cov_fct}{warp covariance matrix function.}
 
-\item{kts}{anchor points for the B-spline basis used to model \eqn{\theta}.}
+\item{kts}{anchor points for the spline basis used to model \eqn{\theta}.}
 
 \item{tw}{anchor points for the warping parameters.}
 
+\item{intercept}{should the basis include an intercept (default is \code{FALSE})}
+
 \item{iter}{two-dimensional numeric consisting of number of outer and inner iterations.}
 
-\item{use_warp_gradient}{logical. Should warp prediction use gradient based optimization?}
+\item{use_warp_gradient}{logical. Should warp prediction use the exact gradient for based optimization?}
 
 \item{homeomorphisms}{should warps be constrained to be homeomorphisms? Options are: \code{'no'}, \code{'soft'} or \code{'hard'}. 'soft' will project the prediction onto the space of homeomorphisms after each prediction. 'hard' will do the optimiziation in the constrained space (not implemented yet!).}
 

@@ -18,7 +18,8 @@ spline_weights <- function(y, t, w, tw, Ainv, kts, intercept = FALSE, smooth_war
 
   if (!increasing) {
     basis <- bs(btime, knots = kts, Boundary.knots = c(0, 1), intercept = intercept)[]
-    c <- as.numeric(solve(t(basis) %*% Ainv %*% basis) %*% t(basis) %*% Ainv %*% unlist(y))
+    #TODO: Check! Can it be done smarter?!
+    c <- as.numeric(MASS::ginv(as.matrix(t(basis) %*% Ainv %*% basis)) %*% t(basis) %*% Ainv %*% unlist(y))
   } else {
     basis <- t(Ispline(btime, 3, knots = kts))
     indices <- 1:(ncol(basis) + intercept)

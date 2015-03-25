@@ -71,28 +71,55 @@ Brownian_motion_cov_fast <- function(t, tau = 1) {
 #' Generate Matern plus measurement noise covariances
 #'
 #' This function generates a Matern motion covariance matrix corresponding to specified evaluation points.
+#' @param t_p row points (typically prediction values).
 #' @param t evaluation points.
 #' @param param parameter vector consisting of scale, range and smoothness.
 #' @param noise logical, should a diagonal matrix be added to the Matern covariance?
+#' @keywords covariance
+#' @export
+
+Matern_cov_rect <- function(t_p, t, param = c(scale = 1, range = 1, smoothness = 2)) {
+  scale <- param[1]
+  range <- param[2]
+  smoothness <- param[3]
+
+  m_p <- length(t_p)
+  m <- length(t)
+  S <- matrix(NA, m_p, m)
+
+  for (i in 1:m) {
+    S[, i] <- Matern(abs(t[i] - t_p), scale = scale, range = range, smoothness = smoothness)
+  }
+
+  return(S)
+}
+
+#' Generate Matern plus possibly measurement noise covariances
+#'
+#' This function generates a Matern motion covariance matrix corresponding to specified evaluation points.
+#' @param t evaluation points.
+#' @param param parameter vector consisting of scale, range and smoothness.
+#' @param noise logical, should a diagonal matrix be added to the Matern covariance?
+#' @param t_p row points (typically prediction values). If non-NULL, a non-square matrix without noise will be returned.
 #' @keywords covariance
 #' @export
 #' @examples
 #' t <- seq(0, 1, length = 10)
 #' Matern_cov(t, param = c(1, 1, 1/2))
 
-Matern_cov <- function(t, param = c(scale = 1, range = 1, smoothness = 2), noise = TRUE) {
-  scale <- param[1]
-  range <- param[2]
-  smoothness <- param[3]
-  m <- length(t)
-  S <- diag(x = Matern(0, scale = scale, range = range, smoothness = smoothness) + noise, nrow = m)
-  i <- 1
-#   while (i < m) {
-#     S[cbind(1:(m - i), (1 + i):m)] <- S[cbind((1 + i):m, 1:(m - i))] <- Matern(abs(t[1:(m - i)] - t[(1 + i):m]), scale = scale, range = range, smoothness = smoothness)
-#     i <- i + 1
-#   }
-  for (i in 1:(m - 1)) {
-    S[i, (i + 1):m] <- S[(i + 1):m, i] <- Matern(abs(t[[i]] - t[(1 + i):m]), scale = scale, range = range, smoothness = smoothness)
+Matern_cov <- function(t, param = c(scale = 1, range = 1, smoothness = 2), noise = TRUE, t_p = NULL) {
+  if (is.null(t_p)) {
+    S <- Matern_cov_rect(t_p, t, param = param)
+  } else {
+    scale <- param[1]
+    range <- param[2]
+    smoothness <- param[3]
+    m <- length(t)
+    S <- diag(x = Matern(0, scale = scale, range = range, smoothness = smoothness) + noise, nrow = m)
+    i <- 1
+    for (i in 1:(m - 1)) {
+      S[i, (i + 1):m] <- S[(i + 1):m, i] <- Matern(abs(t[[i]] - t[(1 + i):m]), scale = scale, range = range, smoothness = smoothness)
+    }
   }
   return(S)
 }

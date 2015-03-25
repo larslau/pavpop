@@ -6,7 +6,7 @@
 \usage{
 estimate_growth(y, t, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct, kts,
   tw, intercept = FALSE, iter = c(5, 5), use_warp_gradient = FALSE,
-  homeomorphisms = "no", like_optim_control = list())
+  homeomorphisms = "no", like_optim_control = list(), silent = FALSE)
 }
 \arguments{
 \item{y}{list of \eqn{n} functional observations. Missing values are allowed.}
