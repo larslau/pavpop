@@ -32,7 +32,7 @@
 #' @keywords likelihood estimation
 #' @export
 #' @examples
-#' Load female growth data from the Berkeley growth study
+#' # Load female growth data from the Berkeley growth study
 #' t_orig <- fda::growth$age
 #' y <- fda::growth$hgtf
 #' m <- nrow(y)
