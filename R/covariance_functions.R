@@ -56,6 +56,8 @@ attr(Brownian, 'stationary') <- FALSE
 #' @param cov_fct covariance function.
 #' @param noise logical. Should an identity matrix be added to the covariance matrix?
 #' @param ... arguments passed to cov_fct.
+#' @export
+
 
 make_cov_fct <- function(cov_fct, noise = TRUE, ...) {
   if (attr(cov_fct, 'stationary')) {
