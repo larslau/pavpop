@@ -44,7 +44,7 @@ estimate_generic(y, t, basis_fct, amp_cov_par, amp_cov_fct, warp_cov_par,
 This function does likelihood estimation in the model \deqn{y_i(t)=\theta(v(t, w_i))+x_i(t)+\epsilon_i(t)} based on iterative local linearization of the model around predictions of the random warping parameters \eqn{w_i}.
 }
 \examples{
-Load female growth data from the Berkeley growth study
+# Load female growth data from the Berkeley growth study
 t_orig <- fda::growth$age
 y <- fda::growth$hgtf
 m <- nrow(y)
