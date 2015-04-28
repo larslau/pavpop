@@ -4,14 +4,16 @@
 \alias{Zi}
 \title{Jacobian of warped B-spline function}
 \usage{
-Zi(t, dwarp, c, kts, increasing = FALSE)
+Zi(t, dwarp, c, basis_fct)
 }
 \arguments{
 \item{t}{(warped) evaluation points.}
 
-\item{kts}{B-spline knots.}
+\item{dwarp}{Jacobian of the warping function for the given evaluation points.}
 
-\item{dvt}{Jacobian of the warping function for the given evaluation points.}
+\item{c}{spline weights.}
+
+\item{basis_fct}{basis function.}
 }
 \description{
 Computes the Jacobian of a warped B-spline function.

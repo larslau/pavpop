@@ -4,7 +4,8 @@
 \alias{sigmasq}
 \title{Noise scale estimate from locally linearized likelihood function}
 \usage{
-sigmasq(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw)
+sigmasq(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw,
+  observation_weights)
 }
 \arguments{
 \item{param}{variance parameters.}
@@ -22,6 +23,8 @@ sigmasq(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw)
 \item{t}{array of time variables corresponding to r.}
 
 \item{tw}{anchor points for warp variables.}
+
+\item{observation_weights}{vector of weights for the individual functional samples to be applied to the likelihood. This is useful for clustering analysis.}
 }
 \description{
 Computes the noise scale estimate from the linearized likelihood given the residual around a predicted warp and the corresponding Jacobians.

@@ -1,126 +1,116 @@
 # TODO:
 # EXPLICITLY GENERATE INVERSE OF BROWNIAN COVARIANCES (+OTHERS?!)
+# INCLUDE CODE FOR MATERN
+# CHECK IF ATTRIBUTE CAN BE SET SMARTER
+# CHECK IF SYMMETRIC MATRICES ARE MORE EFFICIENT
 
-
-
-#' Generate Brownian covariances
+#' Matern covariance function
 #'
-#' This function generates a Brownian motion/bridge covariance matrix corresponding to specified evaluation points.
-#' @param t evaluation points.
-#' @param tau scale parameter.
+#' Functional form of Matern covariance function. Code adapted from the fields package.
+#' @param d evaluation points.
+#' @param param parameter vector consisting of scale, range and smoothness.
+#' @keywords covariance
+#' @note Method taken from the \code{fields} package.
+#' @export
+#' @examples
+#' Matern(seq(0, 1, length = 10), param = c(scale = 1, range = 0.5, smoothness = 2))
+#' Matern(seq(0, 1, length = 10), param = c(scale = 1, range = 1, smoothness = 2))
+
+
+Matern <- function(d, param = c(scale = 1, range = 1, smoothness = 2)) {
+  scale <- param[1]
+  range <- param[2]
+  smoothness <- param[3]
+  if (any(d < 0))
+    stop("distance argument must be nonnegative")
+  d <- d / range
+  d[d == 0] <- 1e-10
+  con <- (2^(smoothness - 1)) * gamma(smoothness)
+  con <- 1 / con
+  return(scale * con * (d^smoothness) * besselK(d, smoothness))
+}
+attr(Matern, 'stationary') <- TRUE
+
+#' Brownian covariance functions
+#'
+#' Functional form of Brownian covariance functions. Brownian bridge is on [0, 1].
+#' @param t two-dimensional vector of evaluation points.
+#' @param param parameter vector consisting of scale parameter tau.
 #' @param type type of covariance, either 'motion' or 'bridge'.
 #' @keywords covariance
 #' @export
 #' @examples
-#' t <- seq(0, 1, length = 10)
-#' Brownian_cov(t, 1)
+#' Brownian(t = c(1, 1))
+#' Brownian(t = c(1, 1), type = 'bridge')
 
-Brownian_cov <- function(t, tau, type = 'motion') {
-	m <- length(t)
-	C <- matrix(NA, m, m)
-	is_bridge <- type == 'bridge'
-	for (i in 1:m) {
-		for (j in i:m) {
-			C[i, j] <- C[j, i] <- tau^2 * (min(t[i], t[j]) - is_bridge * t[i] * t[j])
-		}
-	}
-	return(C)
+Brownian <- function(t, param = c(tau = 1), type = 'motion') {
+  tau <- param[[1]]
+  is_bridge <- type == 'bridge'
+  return(tau^2 * (min(t[1], t[2]) - is_bridge * t[1] * t[2]))
+}
+attr(Brownian, 'stationary') <- FALSE
+
+#' Generate covariance matrix function from covariance function
+#'
+#' Function that takes a covariance function and returns a function that generates covariance matrices with the given covariance function
+#' @param cov_fct covariance function.
+#' @param noise logical. Should an identity matrix be added to the covariance matrix?
+#' @param ... arguments passed to cov_fct.
+
+make_cov_fct <- function(cov_fct, noise = TRUE, ...) {
+  if (attr(cov_fct, 'stationary')) {
+    # stationary covariance, fill rows and columns simultaneously
+    f <- function (t, param) {
+      m <- length(t)
+      S <- diag(cov_fct(0, param, ...) + noise, m)
+      for (i in 1:(m - 1)) {
+        S[i, (i + 1):m] <- S[(i + 1):m, i] <- cov_fct(abs(t[i] - t[(1 + i):m]), param, ...)
+      }
+      return(S)
+    }
+  } else {
+    # Non-stationary covariance, fill in all entries separately
+    f <- function (t, param) {
+      m <- length(t)
+      S <- matrix(NA, m, m)
+      for (i in 1:m) {
+        for (j in i:m) {
+          S[i, j] <- S[j, i] <- cov_fct(c(t[i], t[j]), param, ...)
+        }
+      }
+      if (noise) diag(S) <- diag(S) + 1
+      return(S)
+    }
+  }
+  attr(f, 'cov_fct') <- cov_fct
+  return(f)
 }
 
-#' Generate Brownian motion covariances
+#' Rectangular evaluation of covariance functions
 #'
-#' This function generates a Brownian motion covariance matrix corresponding to specified evaluation points.
-#' @param t evaluation points.
-#' @param tau scale parameter.
-#' @keywords covariance
-#' @export
-#' @examples
-#' t <- seq(0, 1, length = 10)
-#' Brownian_motion_cov_fast(t)
-
-#TODO: UPDATE
-
-Brownian_motion_cov_fast <- function(t, tau = 1) {
-	m <- length(t)
-	C <- matrix(NA, m, m)
-
-	for (i in m:1) {
-		C[i, 1:m] <- C[1:m, i] <- t[i]
-	}
-	return(C)
-}
-
-# require(Rmpfr)
-# x <- t[[2]]
-# jn(2, x)
-# yn(2, x)
-# BesselK(x, as.integer(2))
-#
-# Matern <- function (d, scale = 1, range = 1, alpha = 1/range, smoothness = 0.5,
-#           nu = smoothness, phi = scale)
-# {
-#   if (any(d < 0))
-#     stop("distance argument must be nonnegative")
-#   d <- d * alpha
-#   d[d == 0] <- 1e-10
-#   con <- (2^(nu - 1)) * gamma(nu)
-#   con <- 1/con
-#   return(phi * con * (d^nu) * BesselK(d, nu, expon.scaled = FALSE))
-# }
-
-#' Generate Matern plus measurement noise covariances
+#' Generate rectangular evaluations of covariance functions that are typically used for prediction purposes.
+#' @param t observation points.
+#' @param t_p new "prediction" points.
+#' @param cov_fct covariance function.
+#' @param ... arguments passed to cov_fct.
 #'
-#' This function generates a Matern motion covariance matrix corresponding to specified evaluation points.
-#' @param t_p row points (typically prediction values).
-#' @param t evaluation points.
-#' @param param parameter vector consisting of scale, range and smoothness.
-#' @param noise logical, should a diagonal matrix be added to the Matern covariance?
-#' @keywords covariance
-#' @export
-
-Matern_cov_rect <- function(t_p, t, param = c(scale = 1, range = 1, smoothness = 2)) {
-  scale <- param[1]
-  range <- param[2]
-  smoothness <- param[3]
-
+cov_rect <- function(t, t_p, cov_fct, param, ...) {
   m_p <- length(t_p)
   m <- length(t)
   S <- matrix(NA, m_p, m)
 
-  for (i in 1:m) {
-    S[, i] <- Matern(abs(t[i] - t_p), scale = scale, range = range, smoothness = smoothness)
-  }
-
-  return(S)
-}
-
-#' Generate Matern plus possibly measurement noise covariances
-#'
-#' This function generates a Matern motion covariance matrix corresponding to specified evaluation points.
-#' @param t evaluation points.
-#' @param param parameter vector consisting of scale, range and smoothness.
-#' @param noise logical, should a diagonal matrix be added to the Matern covariance?
-#' @param t_p row points (typically prediction values). If non-NULL, a non-square matrix without noise will be returned.
-#' @keywords covariance
-#' @export
-#' @examples
-#' t <- seq(0, 1, length = 10)
-#' Matern_cov(t, param = c(1, 1, 1/2))
-
-Matern_cov <- function(t, param = c(scale = 1, range = 1, smoothness = 2), noise = TRUE, t_p = NULL) {
-  if (is.null(t_p)) {
-    S <- Matern_cov_rect(t_p, t, param = param)
+  if (attr(cov_fct, 'stationary')) {
+    # stationary covariance, fill rows and columns simultaneously
+    for (i in 1:m) {
+      S[, i] <- cov_fct(abs(t[i] - t_p), param, ...)
+    }
   } else {
-    scale <- param[1]
-    range <- param[2]
-    smoothness <- param[3]
-    m <- length(t)
-    S <- diag(x = Matern(0, scale = scale, range = range, smoothness = smoothness) + noise, nrow = m)
-    i <- 1
-    for (i in 1:(m - 1)) {
-      S[i, (i + 1):m] <- S[(i + 1):m, i] <- Matern(abs(t[[i]] - t[(1 + i):m]), scale = scale, range = range, smoothness = smoothness)
+    # Non-stationary covariance, fill in all entries separately
+    for (i in 1:m_p) {
+      for (j in i:m) {
+        S[i, j] <- S[j, i] <- cov_fct(c(t_p[i], t[j]), param, ...)
+      }
     }
   }
   return(S)
 }
-

@@ -47,7 +47,9 @@ dv <- function(t, tw) {
 #' Compute the inverse warping function weights
 #'
 #' This function evaluates the inverse warping function corresponding to a specified set of warping parameters at a set of evaluation points using linear interpolation.
-#' @inheritParams v
+#' @param w warping parameters.
+#' @param t evaluation points.
+#' @param tw anchor points for the warping parameters.
 #' @keywords warping
 #' @export
 #' @examples
@@ -69,7 +71,7 @@ vinv <- function(w, t, tw) {
 #' @keywords warping
 #' @export
 
-make_homeo <- function(w, tw, epsilon = 0.2) {
+make_homeo <- function(w, tw, epsilon = 0.1) {
   nw <- length(w)
   ui <- diag(1, nrow = nw)
   ui <- rbind(ui, rep(0, nw))

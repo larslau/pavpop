@@ -4,7 +4,7 @@
 \alias{make_homeo}
 \title{Project warping parameters onto the set of values that produce homeomorphic warping functions}
 \usage{
-make_homeo(w, tw, epsilon = 0.2)
+make_homeo(w, tw, epsilon = 0.1)
 }
 \arguments{
 \item{w}{warping parameters.}

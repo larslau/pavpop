@@ -6,36 +6,43 @@
 #' @param w warping parameters.
 #' @param tw anchor points for the warping parameters.
 #' @param Ainv global precision matrix for amplitude variation.
-#' @param kts B-spline knots.
+#' @param basis_fct function for generating a basis.
+#' @param weights weights for the individual observations
 #' @param smooth_warp logical. Should a smooth warping function be used?
 #' @keywords warping
 #' @export
 
-spline_weights <- function(y, t, w, tw, Ainv, kts, intercept = FALSE, smooth_warp = FALSE, increasing = FALSE) {
+spline_weights <- function(y, t, w, tw, Ainv, basis_fct, weights, smooth_warp = FALSE) {
   n <- length(y)
+  m <- sapply(y, length)
+
   btime <- sapply(1:n, function(i) v(w[, i], t[[i]], tw, smooth = smooth_warp))
   btime <- as.numeric(unlist(btime))
 
-  if (!increasing) {
-    basis <- bs(btime, knots = kts, Boundary.knots = c(0, 1), intercept = intercept)[]
-    #TODO: Check! Can it be done smarter?!
-    c <- as.numeric(MASS::ginv(as.matrix(t(basis) %*% Ainv %*% basis)) %*% t(basis) %*% Ainv %*% unlist(y))
-  } else {
-    basis <- t(Ispline(btime, 3, knots = kts))
-    indices <- 1:(ncol(basis) + intercept)
+  basis <- basis_fct(btime)
+  attr(basis, 'class') <- 'matrix'
+  Ainv <- as.numeric(unlist(sapply(1:n, function(x) rep(weights[x], each = m[x])))) * Ainv
+  #TODO: OPTIMIZE, can be optimized by numerical procedures?
+  Dmat <- t(basis) %*% Ainv %*% basis
+  dvec <- t(basis) %*% Ainv %*% unlist(y)
+
+  if (attr(basis_fct, 'increasing')) {
+    intercept <- attr(basis_fct, 'intercept')
+    indices <- 1:ncol(basis)
     for (i in 1:ncol(basis)) {
+      #TODO: DO A PROPER FIX!
       if (length(unique(basis[, i])) <= 3) { # Numerical precision hack. Should be == 1 in an ideal world
         indices <- indices[indices != i + intercept]
       }
     }
-    if (intercept) basis <- cbind(1, basis)
     c <- rep(0, ncol(basis))
-    basis <- basis[,indices]
-    c[indices] <- solve.QP(Dmat = t(basis) %*% Ainv %*% basis,
-                  dvec = Matrix::t(t(unlist(y)) %*% Ainv %*% basis),
-                  Amat = diag(nrow = ncol(basis)))$solution
+    basis <- basis[, indices]
+    c[indices] <- solve.QP(Dmat = Dmat[indices, indices],
+                           dvec = dvec[indices,],
+                           Amat = diag(nrow = ncol(basis)))$solution
+  } else {
+    c <- as.numeric(MASS::ginv(as.matrix(Dmat)) %*% dvec)
   }
-
 
   return(c)
 }
