@@ -110,7 +110,7 @@
 #'
 #' # Display predicted warping functions
 #' plot(t_orig, t_orig, type = 'l', lwd = 2, lty = 2, main = 'Warping functions', xlab = 'Age', ylab = 'Biological age')
-#' for (i in 1:n) lines(t_orig, t_range[2] * v(res$w[,i], t[[i]], tw, smooth = TRUE), lwd = 0.2)
+#' for (i in 1:n) lines(t_orig, t_range[2] * warp_fct(res$w[,i], t[[i]]), lwd = 0.2)
 #'
 
 pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, iter = c(5, 5), use_warp_gradient = FALSE, homeomorphisms = 'no', like_optim_control = list()) {

@@ -8,7 +8,10 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
-
+```{r, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(warning = FALSE, comment = "#>")
+library(pavpop)
+```
 In this vignette we will consider some simple examples of data that needs registration.
 
 ## Example 1: linear shift
@@ -43,7 +46,6 @@ lines(t[[1]], theta(t[[1]]), lwd = 2, lty = 2)
 We now set up the pavpop model to estimate in the model
 
 ```{r}
-# library(pavpop)
 # Set up basis function
 kts <- seq(-0.2, 1.2, length = 15)
 basis_fct <- make_basis_fct(kts = kts, intercept = TRUE, order = 3, boundary = c(-0.2, 1.2))

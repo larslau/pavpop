@@ -4,7 +4,7 @@
 \alias{like_ind}
 \title{Individual locally linearized likelihood function}
 \usage{
-like_ind(param, n_par, r, Zi, amp_cov_fct, warp_cov_fct, t, tw)
+like_ind(param, n_par, r, Zi, amp_cov, warp_cov, t, tw)
 }
 \arguments{
 \item{param}{variance parameters.}
@@ -15,9 +15,9 @@ like_ind(param, n_par, r, Zi, amp_cov_fct, warp_cov_fct, t, tw)
 
 \item{Zi}{Jacobian in the warps of the mean function around the given warp.}
 
-\item{amp_cov_fct}{function for generating amplitude covariance matrix.}
+\item{amp_cov}{function for generating amplitude covariance matrix.}
 
-\item{warp_cov_fct}{function for generating warp covariance function}
+\item{warp_cov}{function for generating warp covariance function}
 
 \item{t}{time variable corresponding to r.}
 

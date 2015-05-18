@@ -4,8 +4,8 @@
 \alias{like}
 \title{Locally linearized likelihood function}
 \usage{
-like(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw,
-  observation_weights)
+like(param, n_par, r, Zis, amp_cov, warp_cov, t, tw,
+  observation_weights = NULL)
 }
 \arguments{
 \item{param}{variance parameters.}
@@ -16,9 +16,9 @@ like(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw,
 
 \item{Zis}{list of Jacobians in the warps of the mean function around the given warp.}
 
-\item{amp_cov_fct}{function for generating amplitude covariance matrix.}
+\item{amp_cov}{function for generating amplitude covariance matrix.}
 
-\item{warp_cov_fct}{function for generating warp covariance function}
+\item{warp_cov}{function for generating warp covariance function}
 
 \item{t}{array of time variables corresponding to r.}
 
