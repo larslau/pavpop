@@ -4,7 +4,7 @@
 \alias{make_cov_fct}
 \title{Generate covariance matrix function from covariance function}
 \usage{
-make_cov_fct(cov_fct, noise = TRUE, inv_cov_fct = NULL, ...)
+make_cov_fct(cov_fct, noise = TRUE, param = NULL, inv_cov_fct = NULL, ...)
 }
 \arguments{
 \item{cov_fct}{covariance function.}

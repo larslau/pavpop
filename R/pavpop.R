@@ -64,7 +64,7 @@
 #' warp_cov_par <- c(tau = 1)
 #' warp_cov <- make_cov_fct(Brownian, noise = FALSE, param = warp_cov_par, type = 'bridge')
 #'
-#' amp_cov_par <- c(scale = 100, range = 0.5, smoothness = 1.5)
+#' amp_cov_par <- c(scale = 200, range = 1, smoothness = 2)
 #' amp_cov <- make_cov_fct(Matern, noise = TRUE, param = amp_cov_par)
 #'
 #'
@@ -110,7 +110,7 @@
 #'
 #' # Display predicted warping functions
 #' plot(t_orig, t_orig, type = 'l', lwd = 2, lty = 2, main = 'Warping functions', xlab = 'Age', ylab = 'Biological age')
-#' for (i in 1:n) lines(t_orig, t_range[2] * v(res$w[,i], t[[i]], tw, smooth = TRUE), lwd = 0.2)
+#' for (i in 1:n) lines(t_orig, t_range[2] * warp_fct(res$w[,i], t[[i]]), lwd = 0.2)
 #'
 
 pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, iter = c(5, 5), use_warp_gradient = FALSE, homeomorphisms = 'no', like_optim_control = list()) {
@@ -249,7 +249,7 @@ pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, i
       method <- if (is.null(like_optim_control$method)) "L-BFGS-B" else like_optim_control$method
       ndeps <- if (is.null(like_optim_control$ndeps)) rep(1e-3, n_par_amp + n_par_warp) else like_optim_control$ndeps
 
-      param <- optim(c(amp_cov_par, warp_cov_par), like, n_par = c(n_par_amp, n_par_warp), r = r, Zis = Zis, amp_cov = amp_cov, warp_cov = warp_cov, t = t, tw = tw, method = method, lower = lower, upper = upper, control = list(ndeps = ndeps, maxit = 10))$par
+      param <- optim(c(amp_cov_par, warp_cov_par), like, n_par = c(n_par_amp, n_par_warp), r = r, Zis = Zis, amp_cov = amp_cov, warp_cov = warp_cov, t = t, tw = tw, method = method, lower = lower, upper = upper, control = list(ndeps = ndeps, maxit = 20))$par
 
       if (!is.null(amp_cov)) amp_cov_par <- param[1:n_par_amp]
       if (!is.null(warp_cov)) warp_cov_par <- param[(n_par_amp + 1):length(param)]

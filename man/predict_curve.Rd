@@ -4,7 +4,7 @@
 \alias{predict_curve}
 \title{Predict individual curves}
 \usage{
-predict_curve(t_p, t, y, c, basis_fct, amp_cov_fct, amp_cov_par, w, tw,
+predict_curve(t_p, t, y, c, basis_fct, warp_fct, amp_cov, amp_cov_par, w,
   deriv = FALSE)
 }
 \arguments{
@@ -18,15 +18,15 @@ predict_curve(t_p, t, y, c, basis_fct, amp_cov_fct, amp_cov_par, w, tw,
 
 \item{basis_fct}{basis function to describe the mean function.}
 
-\item{amp_cov_fct}{amplitude covariance matrix function.}
-
 \item{amp_cov_par}{amplitude covariance parameters.}
 
 \item{w}{warping parameters.}
 
-\item{tw}{anchor points for the warping parameters.}
-
 \item{deriv}{logical. Should the derivative of the curve be predicted?}
+
+\item{amp_cov_fct}{amplitude covariance matrix function.}
+
+\item{tw}{anchor points for the warping parameters.}
 }
 \description{
 This function predicts individual curves from estimated parameters and warps.

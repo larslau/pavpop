@@ -17,9 +17,6 @@
 #' @export
 #' @importFrom Matrix t
 
-#TODO: Allow for no warping/amplitude covariance
-#TODO: CHECK OBSERVATION WEIGHTS AGAIN!
-
 like <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw, observation_weights = NULL) {
   amp_cov_par <- param[1:n_par[1]]
   warp_cov_par <- param[(n_par[1] + 1):length(param)]
@@ -73,48 +70,46 @@ like <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw, observation_wei
   return(res)
 }
 
-#' Individual locally linearized likelihood function
-#'
-#' Computes the linearized likelihood for a single functional sample given the residual around a given warp and the corresponding Jacobians.
-#' @param param variance parameters.
-#' @param n_par vector consisting of number of variance parameters for each covariance function.
-#' @param r residual.
-#' @param Zi Jacobian in the warps of the mean function around the given warp.
-#' @param amp_cov function for generating amplitude covariance matrix.
-#' @param warp_cov function for generating warp covariance function
-#' @param t time variable corresponding to r.
-#' @param tw anchor points for warp variables.
-#' @keywords likelihood
-#' @keywords linearization
-#' @export
-#' @importFrom Matrix t
-
-like_ind <- function(param, n_par, r, Zi, amp_cov, warp_cov, t, tw) {
-  amp_cov_par <- param[1:n_par[1]]
-  warp_cov_par <- param[(n_par[1] + 1):length(param)]
-
-  C <- warp_cov(tw, warp_cov_par)
-  Cinv <- chol2inv(chol(C))
-  m <- length(r)
-
-  sq <- logdet <- 0
-
-  S <- amp_cov(t, amp_cov_par)
-  U <- chol(S)
-  A <- backsolve(U, backsolve(U, Zi, transpose = TRUE))
-  LR <- chol2inv(chol(Cinv + Matrix::t(Zi) %*% A))
-  x <- t(A) %*% r
-  sq <- sq + (sum(backsolve(U, r, transpose = TRUE)^2)
-              - t(x) %*% LR %*% x)
-
-  logdet <- logdet - (determinant(LR)$modulus[1]
-                      - 2 * sum(log(diag(U)))) - determinant(Cinv)$modulus[1]
-
-  sigmahat <- 1 / m * as.numeric(sq)
-  res <- m / 2 * log(sigmahat) + 1 / 2 * logdet
-  res <- exp(-res)
-  return(res)
-}
+# #' Individual locally linearized likelihood function
+# #'
+# #' Computes the linearized likelihood for a single functional sample given the residual around a given warp and the corresponding Jacobians.
+# #' @param param variance parameters.
+# #' @param n_par vector consisting of number of variance parameters for each covariance function.
+# #' @param r residual.
+# #' @param Zi Jacobian in the warps of the mean function around the given warp.
+# #' @param amp_cov function for generating amplitude covariance matrix.
+# #' @param warp_cov function for generating warp covariance function
+# #' @param t time variable corresponding to r.
+# #' @param tw anchor points for warp variables.
+# #' @keywords likelihood
+# #' @keywords linearization
+#
+# like_ind <- function(param, n_par, r, Zi, amp_cov, warp_cov, t, tw) {
+#   amp_cov_par <- param[1:n_par[1]]
+#   warp_cov_par <- param[(n_par[1] + 1):length(param)]
+#
+#   C <- warp_cov(tw, warp_cov_par)
+#   Cinv <- chol2inv(chol(C))
+#   m <- length(r)
+#
+#   sq <- logdet <- 0
+#
+#   S <- amp_cov(t, amp_cov_par)
+#   U <- chol(S)
+#   A <- backsolve(U, backsolve(U, Zi, transpose = TRUE))
+#   LR <- chol2inv(chol(Cinv + Matrix::t(Zi) %*% A))
+#   x <- t(A) %*% r
+#   sq <- sq + (sum(backsolve(U, r, transpose = TRUE)^2)
+#               - t(x) %*% LR %*% x)
+#
+#   logdet <- logdet - (determinant(LR)$modulus[1]
+#                       - 2 * sum(log(diag(U)))) - determinant(Cinv)$modulus[1]
+#
+#   sigmahat <- 1 / m * as.numeric(sq)
+#   res <- m / 2 * log(sigmahat) + 1 / 2 * logdet
+#   res <- exp(-res)
+#   return(res)
+# }
 
 
 #' Noise scale estimate from locally linearized likelihood function

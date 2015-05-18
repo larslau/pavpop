@@ -4,12 +4,26 @@
 # CHECK IF ATTRIBUTE CAN BE SET SMARTER
 # CHECK IF SYMMETRIC MATRICES ARE MORE EFFICIENT
 
+#' Zero covariance function
+#'
+#' Returns a matrix with zeros with rows and columns equal to the length of t.
+#' @param t evaluation points.
+#' @param param not used.
+#' @keywords covariance
+#' @export
 
 zero_cov <- function(t, param = NULL) {
   return(matrix(0, length(t), length(t)))
 }
 attr(zero_cov, 'discrete') <- TRUE
 
+#' Identity covariance function
+#'
+#' Returns a diagonal matrix with diagonal given by param.
+#' @param t evaluation points.
+#' @param param either one-dimensional or equal to the length of t consisting of the diagonal entries.
+#' @keywords covariance
+#' @export
 
 id_cov <- function(t, param = c(scale = 1)) {
   return(diag(param, length(t)))

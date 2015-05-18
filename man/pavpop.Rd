@@ -4,8 +4,8 @@
 \alias{pavpop}
 \title{Estimate parameters and predict warps for curve data}
 \usage{
-pavpop(y, t, basis_fct, warp_fct, amp_cov, warp_cov, iter = c(5, 5),
-  use_warp_gradient = FALSE, homeomorphisms = "no",
+pavpop(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL,
+  iter = c(5, 5), use_warp_gradient = FALSE, homeomorphisms = "no",
   like_optim_control = list())
 }
 \arguments{
@@ -57,15 +57,17 @@ kts <- seq(0, 1, length = 16)[1:15]
 basis_fct <- make_basis_fct(kts = kts, intercept = TRUE, increasing = TRUE,
                             order = 3, boundary = c(0, 1))
 
+# Set up warp function
+tw <- seq(0, 1, length = 5)[2:4]
+warp_fct <- make_warp_fct('smooth', tw)
+
 # Set up covariance functions
 warp_cov_par <- c(tau = 1)
-warp_cov_fct <- make_cov_fct(Brownian, noise = FALSE, type = 'bridge')
+warp_cov <- make_cov_fct(Brownian, noise = FALSE, param = warp_cov_par, type = 'bridge')
 
-amp_cov_par <- c(scale = 50, range = 1, smoothness = 1.5)
-amp_cov_fct <- make_cov_fct(Matern, noise = TRUE)
+amp_cov_par <- c(scale = 200, range = 1, smoothness = 2)
+amp_cov <- make_cov_fct(Matern, noise = TRUE, param = amp_cov_par)
 
-# Set up parametrization
-tw <- seq(0, 1, length = 5)[2:4]
 
 # Estimate in the model
 
@@ -73,13 +75,11 @@ tw <- seq(0, 1, length = 5)[2:4]
 # NOTE: Prediction of velocities is only meaningful
 #       when the smoothness parameter is > 0.5
 lower <- c(1e-2, 1e-2, 0.5001, 1e-2)
-upper <- c(200, 1, 3, 1)
+upper <- c(1000, 1, 3, 1)
 
-res <- pavpop(y, t, basis_fct, amp_cov_par, amp_cov_fct,
-              warp_cov_par, warp_cov_fct, tw, iter = c(3, 3),
-              smooth_warp = TRUE, homeomorphism = 'soft',
-              like_optim_control = list(lower = lower, upper = upper))
-
+res <- pavpop(y, t, basis_fct, warp_fct, amp_cov, warp_cov, iter = c(3, 3),
+              homeomorphism = 'soft', like_optim_control = list(lower = lower,
+                                                                upper = upper))
 # Plot results
 t_p <- seq(range(t)[1], range(t)[2], length = 100)
 t_p_orig <- t_p * 20
@@ -92,9 +92,10 @@ plot(t_p_orig, theta, ylim = range(y), type = 'n', main = 'Original heights and 
      xlab = 'Age', ylab = 'Height')
 for (i in 1:n) {
   points(t_orig, y[[i]], pch = 19, cex = 0.3, col = rainbow(n)[i])
-  lines(t_p_orig, predict_curve(t_p, t[[i]], y[[i]], res$c, basis_fct, amp_cov_fct, res$amp_cov_par,
-                                res$w[,i], tw),
+  lines(t_p_orig, predict_curve(t_p, t[[i]], y[[i]], res$c, basis_fct, warp_fct, amp_cov, res$amp_cov_par,
+                                res$w[,i], deriv = FALSE),
         lwd = 0.5, col = rainbow(n)[i])
+
 }
 lines(t_p_orig, theta, ylim = range(y), lwd = 2, lty = 2,)
 
@@ -102,15 +103,15 @@ lines(t_p_orig, theta, ylim = range(y), lwd = 2, lty = 2,)
 plot(t_p_orig, t_p_orig, ylim = c(0, 23), type = 'n', main = 'Predicted growth velocities',
      xlab = 'Age', ylab = 'Growth velocity')
 for (i in 1:n) {
-  lines(t_p_orig, predict_curve(t_p, t[[i]], y[[i]], res$c, basis_fct, amp_cov_fct, res$amp_cov_par,
-                                res$w[,i], tw, deriv = TRUE) / t_range[2],
+  lines(t_p_orig, predict_curve(t_p, t[[i]], y[[i]], res$c, basis_fct, warp_fct, amp_cov, res$amp_cov_par,
+                                res$w[,i], deriv = TRUE) / t_range[2],
         lwd = 0.5, col = rainbow(n)[i])
 }
 
 
 # Display predicted warping functions
 plot(t_orig, t_orig, type = 'l', lwd = 2, lty = 2, main = 'Warping functions', xlab = 'Age', ylab = 'Biological age')
-for (i in 1:n) lines(t_orig, t_range[2] * v(res$w[,i], t[[i]], tw, smooth = TRUE), lwd = 0.2)
+for (i in 1:n) lines(t_orig, t_range[2] * warp_fct(res$w[,i], t[[i]]), lwd = 0.2)
 }
 \keyword{estimation}
 \keyword{likelihood}
