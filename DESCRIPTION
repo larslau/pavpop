@@ -1,6 +1,6 @@
 Package: pavpop
 Title: Phase and amplitude varying population pattern models
-Version: 0.4
+Version: 0.6
 Authors@R: "Lars Lau Raket <larslau@math.ku.dk> [aut, cre]"
 Description: The package contains methods for doing likelihood estimation in a mixed effects model for curve data where the random effects model amplitude and phase variation.
 Depends: R (>= 3.0.0), Matrix, splines, quadprog, doMC, foreach
