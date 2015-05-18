@@ -1,0 +1,111 @@
+---
+title: "Simple registration examples"
+author: "Lars Lau Raket"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Simple examples}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+In this vignette we will consider some simple examples of data that needs registration.
+
+## Example 1: linear shift
+
+First, we generate a dataset with random shifted curves
+```{r}
+# Number of samples
+n <- 10 
+# Number of observation points
+m <- 30 
+
+# Observation points
+t <- seq(0, 1, length = m + 2)[2:(m + 1)] 
+
+# Mean function
+theta <- function(t) dnorm(t, mean = 0.3, sd = 0.2) + dnorm(t, mean = 0.7, sd = 0.15)
+
+# Generate shifts
+w <- runif(n, min = -0.1, max = 0.1)
+
+# Generate data with random shifts
+sigma <- 0.1
+y <- lapply(w, function(w) {theta(t + w) + rnorm(m, sd = sigma)}) 
+t <- lapply(1:n, function(x) t)
+
+# Plot shifted curves
+plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', xlab = 't', ylab = expression(theta(t)))
+for (i in 1:n) lines(t[[i]], y[[i]], col = rainbow(n)[i])
+lines(t[[1]], theta(t[[1]]), lwd = 2, lty = 2)
+```
+
+We now set up the pavpop model to estimate in the model
+
+```{r}
+# library(pavpop)
+# Set up basis function
+kts <- seq(-0.2, 1.2, length = 15)
+basis_fct <- make_basis_fct(kts = kts, intercept = TRUE, order = 3, boundary = c(-0.2, 1.2))
+
+# Set up warp function
+warp_fct <- make_warp_fct(type = 'shift')
+
+# Estimate in the model
+res <- pavpop(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, iter = c(1, 5))
+```
+
+We can not plot the results
+
+```{r}
+plot(w, res$w, xlab = 'true shifts', ylab = 'estimated shifts')
+
+t_plot <- seq(-0.2, 1.2, length = 100)
+plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', xlab = 't', ylab = expression(theta(t)))
+for (i in 1:n) lines(t[[i]] + res$w[i], y[[i]], col = rainbow(n)[i])
+lines(t_plot, basis_fct(t_plot) %*% res$c, lwd = 2, lty = 2)
+lines(t_plot, theta(t_plot), lwd = 2, lty = 2)
+```
+
+
+## Example 2: linear shift with normally distributed shifts
+We use the same data as before, but now we generate random shifts from a normal distribution
+```{r}
+# Generate shifts
+scale <- 1
+w <- rnorm(n, sd = sigma * scale)
+
+# Generate data with random shifts
+y <- lapply(1:n, function(i) {theta(t[[i]] + w[i]) + rnorm(m, sd = 0.1)}) 
+
+# Plot shifted curves
+plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', xlab = 't', ylab = expression(theta(t)))
+for (i in 1:n) lines(t[[i]], y[[i]], col = rainbow(n)[i])
+lines(t[[1]], theta(t[[1]]), lwd = 2, lty = 2)
+```
+
+Let us first ignore the uncertainty and use the same model as in Example 1.
+
+```{r}
+res_no_uncert <- pavpop(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, iter = c(1, 5))
+```
+
+Correct specification of the model where the shifts are a normal random effect can be done as follows
+
+```{r}
+warp_cov <- make_cov_fct(id_cov)
+res <- pavpop(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = warp_cov, iter = c(5, 5))
+```
+
+
+We can not plot the results
+
+```{r}
+plot(w, res$w, xlab = 'true shifts', ylab = 'estimated shifts')
+
+t_plot <- seq(-0.2, 1.2, length = 100)
+plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', xlab = 't', ylab = expression(theta(t)))
+for (i in 1:n) lines(t[[i]] + res$w[i], y[[i]], col = rainbow(n)[i])
+lines(t_plot, basis_fct(t_plot) %*% res$c, lwd = 2, lty = 2)
+lines(t_plot, theta(t_plot), lwd = 2, lty = 2)
+```

@@ -4,6 +4,19 @@
 # CHECK IF ATTRIBUTE CAN BE SET SMARTER
 # CHECK IF SYMMETRIC MATRICES ARE MORE EFFICIENT
 
+
+zero_cov <- function(t, param = NULL) {
+  return(matrix(0, length(t), length(t)))
+}
+attr(zero_cov, 'discrete') <- TRUE
+
+
+id_cov <- function(t, param = c(scale = 1)) {
+  return(diag(param, length(t)))
+}
+attr(id_cov, 'discrete') <- TRUE
+
+
 #' Matern covariance function
 #'
 #' Functional form of Matern covariance function. Code adapted from the fields package.
@@ -59,31 +72,45 @@ attr(Brownian, 'stationary') <- FALSE
 #' @export
 
 
-make_cov_fct <- function(cov_fct, noise = TRUE, ...) {
-  if (attr(cov_fct, 'stationary')) {
-    # stationary covariance, fill rows and columns simultaneously
-    f <- function (t, param) {
-      m <- length(t)
-      S <- diag(cov_fct(0, param, ...) + noise, m)
-      for (i in 1:(m - 1)) {
-        S[i, (i + 1):m] <- S[(i + 1):m, i] <- cov_fct(abs(t[i] - t[(1 + i):m]), param, ...)
-      }
-      return(S)
+make_cov_fct <- function(cov_fct, noise = TRUE, param = NULL, inv_cov_fct = NULL, ...) {
+  if (!is.null(attr(cov_fct, 'discrete'))) {
+    if (attr(cov_fct, 'discrete')) {
+      f <- cov_fct
+    } else {
+      stop('attribute \'discrete\' should be NULL for non-discrete covariances.')
     }
   } else {
-    # Non-stationary covariance, fill in all entries separately
-    f <- function (t, param) {
-      m <- length(t)
-      S <- matrix(NA, m, m)
-      for (i in 1:m) {
-        for (j in i:m) {
-          S[i, j] <- S[j, i] <- cov_fct(c(t[i], t[j]), param, ...)
+    if (attr(cov_fct, 'stationary')) {
+      # stationary covariance, fill rows and columns simultaneously
+      f <- function (t, param) {
+        m <- length(t)
+        S <- diag(cov_fct(0, param, ...) + noise, m)
+        for (i in 1:(m - 1)) {
+          S[i, (i + 1):m] <- S[(i + 1):m, i] <- cov_fct(abs(t[i] - t[(1 + i):m]), param, ...)
         }
+        return(S)
       }
-      if (noise) diag(S) <- diag(S) + 1
-      return(S)
+    } else {
+      # Non-stationary covariance, fill in all entries separately
+      f <- function (t, param) {
+        m <- length(t)
+        S <- matrix(NA, m, m)
+        for (i in 1:m) {
+          for (j in i:m) {
+            S[i, j] <- S[j, i] <- cov_fct(c(t[i], t[j]), param, ...)
+          }
+        }
+        if (noise) diag(S) <- diag(S) + 1
+        return(S)
+      }
     }
   }
+  if (is.null(param)) param <- formals(cov_fct)$param
+  attr(f, 'param') <- param
+  # Set solve method
+  attr(f, 'inv_cov_fct') <- inv_cov_fct
+  # Set the scale parameter
+  attr(f, 'scale') <- ifelse(is.null(formals(cov_fct)$param$scale), NA, which(names(formals(cov_fct)$param) == 'scale') - 1)
   attr(f, 'cov_fct') <- cov_fct
   return(f)
 }

@@ -1,3 +1,5 @@
+# TODO: TERMINATE ITERATIONS WHEN CONVERGED
+# TODO: TEST PARALLEL LIKELIHOOD FOR MANY SAMPLES
 # TODO: MAKE SINGLE CLUSTER LIKELIHOOD (EASY!)
 # TODO: MAKE DETAILS SECTION IN DOCUMENTATION
 # TODO: UPDATE DOCUMENTATION
@@ -9,9 +11,10 @@
 # TODO LATER: MAKE LARGE WARPS POSSIBLE (AND CHEAP)
 # TODO LATER: ALLOW LARGE m (USING SPARSE CHOL)
 # TODO LATER: ALLOW SHIFT WARPS
-# TOTO: CHOOSE BEST LINEARIZED LIKELIHOOD
+# TODO: CHOOSE BEST LINEARIZED LIKELIHOOD
+# TODO: FREE WARP COVARIANCE, ALREADY POSSIBLE?!
 
-#' Estimate parameters and predict warps for curve data
+#' Estimate parameters, predict warps and calculate mean clusters for curve data
 #'
 #' This function does likelihood estimation in the model \deqn{y_i(t)=\theta(v(t, w_i))+x_i(t)+\epsilon_i(t)} based on iterative local linearization of the model around predictions of the random warping parameters \eqn{w_i}.
 #' @param y list of \eqn{n} functional observations. Missing values are allowed.
@@ -22,92 +25,17 @@
 #' @param warp_cov_par warp covariance parameters.
 #' @param warp_cov_fct warp covariance matrix function.
 #' @param tw anchor points for the warping parameters.
-#' @param intercept should the basis include an intercept (default is \code{FALSE})
 #' @param iter two-dimensional numeric consisting of number of outer and inner iterations.
 #' @param use_warp_gradient logical. Should warp prediction use the exact gradient for based optimization?
 #' @param smooth_warp logical. Should warping functions be based on a monotonic cubic spline?
 #' @param homeomorphisms should warps be constrained to be homeomorphisms? Options are: \code{'no'}, \code{'soft'} or \code{'hard'}. 'soft' will project the prediction onto the space of homeomorphisms after each prediction. 'hard' will do the optimiziation in the constrained space (not implemented yet!).
 #' @param cluster_options a list of control parameters if clustering should be used. See 'Details'.
+#' @param n_cores number of cores to use.
 #' @param like_optim_control list of control options for likelihood optimization. Parameters are given as \code{c(amp_cov_par, warp_cov_par)} and options include lower, upper, method, ndev (see \code{\link[stats::optim]{optim}}).
 #' @keywords likelihood estimation
 #' @export
-#' @examples
-#' # Load female growth data from the Berkeley growth study
-#' t_orig <- fda::growth$age
-#' y <- fda::growth$hgtf
-#' m <- nrow(y)
-#' n <- ncol(y)
-#'
-#' # Specify age rage for normalization, endpoints are 0 and 1 in normalized data
-#' t_range <- c(0, 20)
-#' t <- replicate(n, t_orig / t_range[2], simplify = FALSE)
-#' y <- lapply(1:n, function (x) y[, x])
-#'
-#' # Set up basis function
-#' kts <- seq(0, 1, length = 16)[1:15]
-#' basis_fct <- make_basis_fct(kts = kts, intercept = TRUE, increasing = TRUE,
-#'                             order = 3, boundary = c(0, 1))
-#'
-#' # Set up covariance functions
-#' warp_cov_par <- c(tau = 1)
-#' warp_cov_fct <- make_cov_fct(Brownian, noise = FALSE, type = 'bridge')
-#'
-#' amp_cov_par <- c(scale = 50, range = 1, smoothness = 1.5)
-#' amp_cov_fct <- make_cov_fct(Matern, noise = TRUE)
-#'
-#' # Set up parametrization
-#' tw <- seq(0, 1, length = 5)[2:4]
-#'
-#' # Estimate in the model
-#'
-#' # Bounds of parameters
-#' # NOTE: Prediction of velocities is only meaningful
-#' #       when the smoothness parameter is > 0.5
-#' lower <- c(1e-2, 1e-2, 0.5001, 1e-2)
-#' upper <- c(200, 1, 3, 1)
-#'
-#' res <- estimate_generic(y, t, basis_fct, amp_cov_par, amp_cov_fct,
-#'                         warp_cov_par, warp_cov_fct, tw, iter = c(3, 3),
-#'                         smooth_warp = TRUE, homeomorphism = 'soft',
-#'                         like_optim_control = list(lower = lower,
-#'                                                   upper = upper))
-#'
-#' # Plot results
-#' t_p <- seq(range(t)[1], range(t)[2], length = 100)
-#' t_p_orig <- t_p * 20
-#'
-#' # Functional fixed effect
-#' theta <- basis_fct(t_p) %*% res$c
-#'
-#' # Display data with predictions
-#' plot(t_p_orig, theta, ylim = range(y), type = 'n', main = 'Original heights and predicted',
-#'      xlab = 'Age', ylab = 'Height')
-#' for (i in 1:n) {
-#'   points(t_orig, y[[i]], pch = 19, cex = 0.3, col = rainbow(n)[i])
-#'   lines(t_p_orig, predict_curve(t_p, t[[i]], y[[i]], res$c, basis_fct, amp_cov_fct, res$amp_cov_par,
-#'                                 res$w[,i], tw),
-#'         lwd = 0.5, col = rainbow(n)[i])
-#' }
-#' lines(t_p_orig, theta, ylim = range(y), lwd = 2, lty = 2,)
-#'
-#' # Compute and display growth velocities
-#' plot(t_p_orig, t_p_orig, ylim = c(0, 23), type = 'n', main = 'Predicted growth velocities',
-#'      xlab = 'Age', ylab = 'Growth velocity')
-#' for (i in 1:n) {
-#'   lines(t_p_orig, predict_curve(t_p, t[[i]], y[[i]], res$c, basis_fct, amp_cov_fct, res$amp_cov_par,
-#'                                 res$w[,i], tw, deriv = TRUE) / t_range[2],
-#'         lwd = 0.5, col = rainbow(n)[i])
-#' }
-#'
-#'
-#' # Display predicted warping functions
-#' plot(t_orig, t_orig, type = 'l', lwd = 2, lty = 2, main = 'Warping functions', xlab = 'Age', ylab = 'Biological age')
-#' for (i in 1:n) lines(t_orig, t_range[2] * v(res$w[,i], t[[i]], tw, smooth = TRUE), lwd = 0.2)
-#'
 
-
-
-estimate_generic <- function(y, t, basis_fct, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct, tw, iter = c(5, 5), use_warp_gradient = FALSE, smooth_warp = FALSE, homeomorphisms = 'no', cluster_options = list(), like_optim_control = list()) {
+pavpop_clust <- function(y, t, basis_fct, amp_cov_par, amp_cov_fct, warp_cov_par, warp_cov_fct, tw, iter = c(5, 5), use_warp_gradient = FALSE, smooth_warp = FALSE, homeomorphisms = 'no', cluster_options = list(), n_cores = 1, like_optim_control = list()) {
   nouter <- iter[1] + 1
   ninner <- iter[2]
 
@@ -158,6 +86,14 @@ estimate_generic <- function(y, t, basis_fct, amp_cov_par, amp_cov_fct, warp_cov
 
   #TODO: option for fixed, supplied clusters
 
+  # Parallel setup
+  registerDoMC(cores = n_cores)
+  #   if (n_cores > 1) {
+  #     # library(doMC)
+  #     # library(foreach)
+  #     registerDoMC(cores = n_cores)
+  #   }
+
   # Initialize warp parameters
   w <- array(0, dim = c(mw, n, k))
 
@@ -199,7 +135,8 @@ estimate_generic <- function(y, t, basis_fct, amp_cov_par, amp_cov_fct, warp_cov
           #TODO: constrainOptim
           stop("Hard homeomorphic constrained optimization for warps is not implemented.")
         } else {
-          for (i in 1:n) {
+          w_res <- foreach(i = 1:n) %dopar% {
+            ww <- array(w[, i, ], dim = c(mw, k))
             for (j in 1:k) {
               gr <- NULL
               warp_optim_method <- 'Nelder-Mead'
@@ -208,10 +145,13 @@ estimate_generic <- function(y, t, basis_fct, amp_cov_par, amp_cov_fct, warp_cov
                 gr <- function(w, t, y, tw, c, Ainv, Cinv, basis_fct) posterior_grad(w, dwarp[[i]], t, y, tw, c, Ainv, Cinv, basis_fct)
                 warp_optim_method <- 'BFGS'
               }
-              w[, i, j] <- optim(par = w[, i, j], fn = posterior, gr = gr, method = warp_optim_method, t = t[[i]], y = y[[i]], tw = tw, c = c[[j]], Ainv = Ainv[[i]], Cinv = Cinv, basis_fct = basis_fct, smooth_warp = smooth_warp)$par
-              if (homeomorphisms == 'soft') w[, i, j] <- make_homeo(w[, i, j], tw)
+              #               w[, i, j] <- optim(par = w[, i, j], fn = posterior, gr = gr, method = warp_optim_method, t = t[[i]], y = y[[i]], tw = tw, c = c[[j]], Ainv = Ainv[[i]], Cinv = Cinv, basis_fct = basis_fct, smooth_warp = smooth_warp)$par
+              ww[, j] <- optim(par = ww[, j], fn = posterior, gr = gr, method = warp_optim_method, t = t[[i]], y = y[[i]], tw = tw, c = c[[j]], Ainv = Ainv[[i]], Cinv = Cinv, basis_fct = basis_fct, smooth_warp = smooth_warp)$par
+              if (homeomorphisms == 'soft') ww[, j] <- make_homeo(ww[, j], tw)#w[, i, j] <- make_homeo(w[, i, j], tw)
             }
+            return(ww)
           }
+          for (i in 1:n) w[, i, ] <- w_res[[i]]
         }
 
         # Update spline weights
@@ -263,6 +203,13 @@ estimate_generic <- function(y, t, basis_fct, amp_cov_par, amp_cov_fct, warp_cov
 
         param <- optim(c(amp_cov_par, warp_cov_par), like_fct, method = method, lower = lower, upper = upper, control = list(ndeps = ndeps, maxit = maxit))$par
 
+        # Parallel DEoptim
+        #         param <- DEoptim(like_fct, lower, upper, control = DEoptim.control(trace = FALSE, parallelType = 1, itermax = 25))$optim$bestmem
+
+
+        # If we are serious about finding good parameter estimates, run the following:
+        # param <- genoud(like_fct, n_par_amp + n_par_warp, pop.size = 100, max.generations = 10, starting.values = c(amp_cov_par, warp_cov_par), Domains = cbind(lower, upper), print.level = 0)$par
+        # Make possible to use genoud first iteration
         amp_cov_par <- param[1:n_par_amp]
         warp_cov_par <- param[(n_par_amp + 1):length(param)]
 
@@ -302,9 +249,11 @@ estimate_generic <- function(y, t, basis_fct, amp_cov_par, amp_cov_fct, warp_cov
   }
   if (k == 1) c <- c[[1]]
   result <- list(c = c, w = w[,,1:k], amp_cov_par = amp_cov_par, warp_cov_par = warp_cov_par, sigma = sigma)
+  result$ind_like <- ind_like
+
   if (return_ind_like) { #TODO: rename?
-    result$ind_like <- ind_like
     result$pi <- pi
   }
+
   return(result)
 }

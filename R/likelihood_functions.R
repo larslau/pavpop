@@ -1,3 +1,5 @@
+#TODO: CHECK OBSERVATION WEIGHTS = 1 CALCULATIONS
+
 #' Locally linearized likelihood function
 #'
 #' Computes the linearized likelihood given the residual around a given warp and the corresponding Jacobians.
@@ -5,8 +7,8 @@
 #' @param n_par vector consisting of number of variance parameters for each covariance function.
 #' @param r residual.
 #' @param Zis list of Jacobians in the warps of the mean function around the given warp.
-#' @param amp_cov_fct function for generating amplitude covariance matrix.
-#' @param warp_cov_fct function for generating warp covariance function
+#' @param amp_cov function for generating amplitude covariance matrix.
+#' @param warp_cov function for generating warp covariance function
 #' @param t array of time variables corresponding to r.
 #' @param tw anchor points for warp variables.
 #' @param observation_weights vector of weights for the individual functional samples to be applied to the likelihood. This is useful for clustering analysis.
@@ -18,33 +20,50 @@
 #TODO: Allow for no warping/amplitude covariance
 #TODO: CHECK OBSERVATION WEIGHTS AGAIN!
 
-like <- function(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw, observation_weights) {
+like <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw, observation_weights = NULL) {
   amp_cov_par <- param[1:n_par[1]]
   warp_cov_par <- param[(n_par[1] + 1):length(param)]
 
-  C <- warp_cov_fct(tw, warp_cov_par)
-  Cinv <- chol2inv(chol(C))
+
+  if (!is.null(warp_cov)) {
+    C <- warp_cov(tw, warp_cov_par)
+    Cinv <- chol2inv(chol(C))
+  } else {
+    C <- Cinv <- matrix(0, length(tw), length(tw))
+  }
 
   n <- length(r)
   m <- sapply(r, length)
+
+  if (is.null(observation_weights)) observation_weights <- rep(1, n)
 
   # Normalize for proper profile likelihood
   observation_weights <- observation_weights / sum(observation_weights * m)
 
   sq <- logdet <- 0
   for (i in 1:n) {
-    S <- amp_cov_fct(t[[i]], amp_cov_par)
+    if (!is.null(amp_cov)) {
+      S <- amp_cov(t[[i]], amp_cov_par)
+      U <- chol(S)
+    } else {
+      # TODO: SPARSE MATRIX COULD MAKE IT FASTER, THEN 'diag' cannot be used for logdet
+      S <- U <- diag(1, m[i])
+    }
     rr <- r[[i]]
-    U <- chol(S)
     ZZ <- Zis[[i]]
-    A <- backsolve(U, backsolve(U, ZZ, transpose = TRUE))
-    LR <- chol2inv(chol(Cinv + Matrix::t(ZZ) %*% A))
-    x <- t(A) %*% rr
+
+    if (!is.null(warp_cov)) {
+      A <- backsolve(U, backsolve(U, ZZ, transpose = TRUE))
+      LR <- chol2inv(chol(Cinv + Matrix::t(ZZ) %*% A))
+      x <- t(A) %*% rr
+    } else {
+      LR <- x <- 0
+    }
     sq <- sq + (sum(backsolve(U, rr, transpose = TRUE)^2)
                 - t(x) %*% LR %*% x) * observation_weights[i]
-
-    logdet <- logdet - (determinant(LR)$modulus[1]
-                        - 2 * sum(log(diag(U)))) * observation_weights[i]
+    logdet_tmp <- 0
+    if (!is.null(warp_cov)) logdet_tmp <- determinant(LR)$modulus[1]
+    logdet <- logdet - (logdet_tmp - 2 * sum(log(diag(U)))) * observation_weights[i]
   }
   logdet <- logdet - sum(observation_weights) * determinant(Cinv)$modulus[1]
 
@@ -61,8 +80,8 @@ like <- function(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw, observa
 #' @param n_par vector consisting of number of variance parameters for each covariance function.
 #' @param r residual.
 #' @param Zi Jacobian in the warps of the mean function around the given warp.
-#' @param amp_cov_fct function for generating amplitude covariance matrix.
-#' @param warp_cov_fct function for generating warp covariance function
+#' @param amp_cov function for generating amplitude covariance matrix.
+#' @param warp_cov function for generating warp covariance function
 #' @param t time variable corresponding to r.
 #' @param tw anchor points for warp variables.
 #' @keywords likelihood
@@ -70,17 +89,17 @@ like <- function(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw, observa
 #' @export
 #' @importFrom Matrix t
 
-like_ind <- function(param, n_par, r, Zi, amp_cov_fct, warp_cov_fct, t, tw) {
+like_ind <- function(param, n_par, r, Zi, amp_cov, warp_cov, t, tw) {
   amp_cov_par <- param[1:n_par[1]]
   warp_cov_par <- param[(n_par[1] + 1):length(param)]
 
-  C <- warp_cov_fct(tw, warp_cov_par)
+  C <- warp_cov(tw, warp_cov_par)
   Cinv <- chol2inv(chol(C))
   m <- length(r)
 
   sq <- logdet <- 0
 
-  S <- amp_cov_fct(t, amp_cov_par)
+  S <- amp_cov(t, amp_cov_par)
   U <- chol(S)
   A <- backsolve(U, backsolve(U, Zi, transpose = TRUE))
   LR <- chol2inv(chol(Cinv + Matrix::t(Zi) %*% A))
@@ -107,28 +126,42 @@ like_ind <- function(param, n_par, r, Zi, amp_cov_fct, warp_cov_fct, t, tw) {
 #' @export
 
 
-sigmasq <- function(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw, observation_weights) {
+sigmasq <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw, observation_weights = NULL) {
   amp_cov_par <- param[1:n_par[1]]
   warp_cov_par <- param[(n_par[1] + 1):length(param)]
 
-  C <- warp_cov_fct(tw, warp_cov_par)
+  if (!is.null(warp_cov)) {
+  C <- warp_cov(tw, warp_cov_par)
   Cinv <- chol2inv(chol(C))
+  } else {
+    C <- Cinv <- matrix(0, length(tw), length(tw))
+  }
 
   n <- length(r)
   m <- sapply(r, length)
+
+  if (is.null(observation_weights)) observation_weights <- rep(1, n)
 
   # Normalize for proper profile likelihood
   observation_weights <- observation_weights / sum(observation_weights * m)
 
   sq <- 0
   for (i in 1:n) {
-    S <- amp_cov_fct(t[[i]], amp_cov_par)
+    if (!is.null(amp_cov)) {
+      S <- amp_cov(t[[i]], amp_cov_par)
+      U <- chol(S)
+    } else {
+      S <- U <- Diagonal(m[i], 1)
+    }
     rr <- r[[i]]
-    U <- chol(S)
     ZZ <- Zis[[i]]
-    A <- backsolve(U, backsolve(U, ZZ, transpose = TRUE))
-    LR <- chol2inv(chol(Cinv + Matrix::t(ZZ) %*% A))
-    x <- t(A) %*% rr
+    if (!is.null(warp_cov)) {
+      A <- backsolve(U, backsolve(U, ZZ, transpose = TRUE))
+      LR <- chol2inv(chol(Cinv + Matrix::t(ZZ) %*% A))
+      x <- t(A) %*% rr
+    } else {
+      LR <- x <- 0
+    }
     sq <- sq + (sum(backsolve(U, rr, transpose = TRUE)^2)
                 - t(x) %*% LR %*% x) * observation_weights[i]
     }
@@ -141,35 +174,41 @@ sigmasq <- function(param, n_par, r, Zis, amp_cov_fct, warp_cov_fct, t, tw, obse
 #' This function calculates the posterior of the data given the random warping parameters
 #' @param w warping parameters.
 #' @param t evaluation points.
-#' @param tw anchor points for the warping parameters.
-#' @param c B-spline coefficients.
+#' @param y values at evaluation points.
+#' @param basis_fct basis function to describe the mean function.
+#' @param c spline coefficients.
 #' @param Ainv precision matrix for amplitude variation.
 #' @param Cinv precision matrix for the warping parameters.
-#' @param kts anchor points for the B-spline basis used to model the functional parameter \eqn{\theta}.
 #' @keywords warping
 #' @keywords posterior
 #' @export
 
-posterior <- function(w, t, y, tw, c, Ainv, Cinv, basis_fct, smooth_warp = FALSE) {
-  vt <- v(w, t, tw, smooth = smooth_warp)
-  vt[vt < 0] <- 0
-  vt[vt > 1] <- 1
+posterior <- function(w, warp_fct, t, y, basis_fct, c, Sinv, Cinv) {
+  vt <- warp_fct(w, t)
   basis <- basis_fct(vt)
   r <- y - basis %*% c
-  return((t(r) %*% Ainv %*% r + t(w) %*% Cinv %*% w)[1])
+  return((t(r) %*% Sinv %*% r + t(w) %*% Cinv %*% w)[1])
 }
 
 #' Posterior of the data given the random warping parameters
 #'
 #' This function calculates the posterior of the data given the random warping parameters
+#' @param w warping parameters.
 #' @param dwarp Jaobian of the vector of observed warped points in the warping parameters.
-#' @inheritParams like
+#' @param t evaluation points.
+#' @param y values at evaluation points.
+#' @param tw anchor points for the warping parameters.
+#' @param c B-spline coefficients.
+#' @param Ainv precision matrix for amplitude variation.
+#' @param Cinv precision matrix for the warping parameters.
+#' @param basis_fct basis function to describe the mean function.
+#' @param smooth_warp logical. Should warping functions be based on a monotonic cubic spline?
 #' @keywords warping
-#' @keywords posterior
+#' @keywords posterior
 #' @export
 
 posterior_grad <- function(w, dwarp, t, y, tw, c, Ainv, Cinv, basis_fct) {
-  vt <- v(w, t, tw)
+  vt <- v(w, t, tw, smooth = smooth_warp, smooth_warp = FALSE)
   vt[vt < 0] <- 0
   vt[vt > 1] <- 1
   r <- basis_fct(vt) %*% c - y

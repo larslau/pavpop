@@ -9,6 +9,8 @@
 #' @keywords spline
 #' @export
 
+
+#TODO: EXPLICIT DERIVATIVES!!
 make_basis_fct <- function(kts, intercept = FALSE, increasing = FALSE, order = 3, boundary = c(0, 1)) {
   epsilon <- 1e-5
   if (increasing) { # I-spline
@@ -26,10 +28,11 @@ make_basis_fct <- function(kts, intercept = FALSE, increasing = FALSE, order = 3
     b <- function(t, deriv = FALSE) {
       basis <- bs(t + deriv * epsilon, knots = kts, degree = order, Boundary.knots = boundary, intercept = intercept)
       if (deriv) basis <- (basis - bs(t - deriv * epsilon, knots = kts, degree = order, Boundary.knots = boundary, intercept = intercept)) / (2 * epsilon)
-      return(basis)
+      return(basis[])
     }
 
   }
+  attr(b, 'df') <- length(kts) + order - 2 * increasing + intercept
   attr(b, 'intercept') <- intercept
   attr(b, 'increasing') <- increasing
   return(b)
