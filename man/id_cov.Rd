@@ -9,7 +9,11 @@ id_cov(t, param = c(scale = 1))
 \arguments{
 \item{t}{evaluation points.}
 
+<<<<<<< HEAD
 \item{param}{either one-dimensional or equal to the length of t consisting of the diagonal entries.}
+=======
+\item{param}{one-dimensional consisting of the diagonal entry.}
+>>>>>>> origin/master
 }
 \description{
 Returns a diagonal matrix with diagonal given by param.
