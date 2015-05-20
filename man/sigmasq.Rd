@@ -22,17 +22,11 @@ sigmasq(param, n_par, r, Zis, amp_cov, warp_cov, t, tw,
 
 \item{Zis}{list of Jacobians in the warps of the mean function around the given warp.}
 
-<<<<<<< HEAD
 \item{amp_cov}{function for generating amplitude covariance matrix.
 #}
 
 \item{warp_cov}{function for generating warp covariance function
 #}
-=======
-\item{amp_cov}{function for generating amplitude covariance matrix.}
-
-\item{warp_cov}{function for generating warp covariance function}
->>>>>>> origin/master
 
 \item{t}{time variable corresponding to r.
 #}

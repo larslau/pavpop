@@ -21,11 +21,7 @@ attr(zero_cov, 'discrete') <- TRUE
 #'
 #' Returns a diagonal matrix with diagonal given by param.
 #' @param t evaluation points.
-<<<<<<< HEAD
 #' @param param either one-dimensional or equal to the length of t consisting of the diagonal entries.
-=======
-#' @param param one-dimensional consisting of the diagonal entry.
->>>>>>> origin/master
 #' @keywords covariance
 #' @export
 

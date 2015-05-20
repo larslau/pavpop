@@ -65,11 +65,7 @@ warp_fct <- make_warp_fct('smooth', tw)
 warp_cov_par <- c(tau = 1)
 warp_cov <- make_cov_fct(Brownian, noise = FALSE, param = warp_cov_par, type = 'bridge')
 
-<<<<<<< HEAD
 amp_cov_par <- c(scale = 200, range = 1, smoothness = 2)
-=======
-amp_cov_par <- c(scale = 100, range = 0.5, smoothness = 1.5)
->>>>>>> origin/master
 amp_cov <- make_cov_fct(Matern, noise = TRUE, param = amp_cov_par)
 
 
