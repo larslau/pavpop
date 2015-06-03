@@ -185,7 +185,7 @@ pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, i
   dwarp <- list()
   if (warp_type != 'smooth') {
     for (i in 1:n) {
-      dwarp[[i]] <- warp_fct(t[[i]], w[, i], w_grad = TRUE)
+      dwarp[[i]] <- warp_fct(w[, i], t[[i]], w_grad = TRUE)
       if (warp_type == 'piecewise linear') dwarp[[i]] <- as(dwarp[[i]], "dgCMatrix")
     }
   }
