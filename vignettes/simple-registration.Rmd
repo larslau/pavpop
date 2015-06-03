@@ -9,17 +9,17 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 ```{r, echo = FALSE, message = FALSE}
-knitr::opts_chunk$set(warning = FALSE, comment = "#>")
+knitr::opts_chunk$set(warning = FALSE, comment = "#>", fig.height = 5, fig.width = 7)
 library(pavpop)
 ```
 In this vignette we will consider some simple examples of data that needs registration.
 
 ## Example 1: linear shift
 
-First, we generate a dataset with random shifted curves
+First, we generate a dataset with randomly shifted curves with noise
 ```{r}
 # Number of samples
-n <- 10 
+n <- 30 
 # Number of observation points
 m <- 30 
 
@@ -38,7 +38,9 @@ y <- lapply(w, function(w) {theta(t + w) + rnorm(m, sd = sigma)})
 t <- lapply(1:n, function(x) t)
 
 # Plot shifted curves
-plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', xlab = 't', ylab = expression(theta(t)))
+plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', 
+     xlab = 't', ylab = 'y(t)')
+legend(0.9, 3, legend = expression(theta(t)), lty = 2, lwd = 2)
 for (i in 1:n) lines(t[[i]], y[[i]], col = rainbow(n)[i])
 lines(t[[1]], theta(t[[1]]), lwd = 2, lty = 2)
 ```
@@ -60,12 +62,13 @@ res <- pavpop(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, iter =
 We can not plot the results
 
 ```{r}
-plot(w, res$w, xlab = 'true shifts', ylab = 'estimated shifts')
+plot(w, res$w, xlab = 'true shifts', ylab = 'estimated shifts', pch = 19)
+abline(0, 1, lty = 2)
 
 t_plot <- seq(-0.2, 1.2, length = 100)
 plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', xlab = 't', ylab = expression(theta(t)))
 for (i in 1:n) lines(t[[i]] + res$w[i], y[[i]], col = rainbow(n)[i])
-lines(t_plot, basis_fct(t_plot) %*% res$c, lwd = 2, lty = 2)
+lines(t_plot, basis_fct(t_plot) %*% res$c, lwd = 2, lty = 2, col = 'red')
 lines(t_plot, theta(t_plot), lwd = 2, lty = 2)
 ```
 
@@ -74,8 +77,8 @@ lines(t_plot, theta(t_plot), lwd = 2, lty = 2)
 We use the same data as before, but now we generate random shifts from a normal distribution
 ```{r}
 # Generate shifts
-scale <- 1
-w <- rnorm(n, sd = sigma * scale)
+scale <- 0.5
+w <- rnorm(n, sd = sigma * sqrt(scale))
 
 # Generate data with random shifts
 y <- lapply(1:n, function(i) {theta(t[[i]] + w[i]) + rnorm(m, sd = 0.1)}) 
@@ -103,11 +106,27 @@ res <- pavpop(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = warp_cov, it
 We can not plot the results
 
 ```{r}
-plot(w, res$w, xlab = 'true shifts', ylab = 'estimated shifts')
+plot(w, res$w, xlab = 'true shifts', ylab = 'estimated shifts', pch = 19, col = 'green')
+points(w, res_no_uncert$w, pch = 19, col = 'red', cex = 0.5)
+abline(0, 1, lty = 2)
 
 t_plot <- seq(-0.2, 1.2, length = 100)
 plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', xlab = 't', ylab = expression(theta(t)))
 for (i in 1:n) lines(t[[i]] + res$w[i], y[[i]], col = rainbow(n)[i])
-lines(t_plot, basis_fct(t_plot) %*% res$c, lwd = 2, lty = 2)
+lines(t_plot, basis_fct(t_plot) %*% res$c, lwd = 2, lty = 2, col = 'red')
 lines(t_plot, theta(t_plot), lwd = 2, lty = 2)
+
+# Compare estimated variance parameters of warps
+
+# True standard deviation
+sigma * sqrt(scale)
+
+# Standard deviation of true shifts 
+sd(w)
+
+# Estimated standard deviation
+res$sigma * sqrt(res$warp_cov_par)
+
+# Standard deviation of predicted warps
+sd(res$w)
 ```

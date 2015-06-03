@@ -5,7 +5,8 @@
 \title{Estimate parameters and predict warps for curve data}
 \usage{
 pavpop(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL,
-  iter = c(5, 5), use_warp_gradient = FALSE, homeomorphisms = "no",
+  iter = c(5, 5), parallel = list(n_cores = 1, parallel_likelihood = FALSE),
+  use_warp_gradient = FALSE, homeomorphisms = "no",
   like_optim_control = list())
 }
 \arguments{

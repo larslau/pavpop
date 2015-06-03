@@ -17,11 +17,9 @@
 #' @export
 #' @importFrom Matrix t
 
-like <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw, observation_weights = NULL) {
+like <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw) {
   amp_cov_par <- param[1:n_par[1]]
   warp_cov_par <- param[(n_par[1] + 1):length(param)]
-
-
   if (!is.null(warp_cov)) {
     C <- warp_cov(tw, warp_cov_par)
     Cinv <- chol2inv(chol(C))
@@ -31,11 +29,6 @@ like <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw, observation_wei
 
   n <- length(r)
   m <- sapply(r, length)
-
-  if (is.null(observation_weights)) observation_weights <- rep(1, n)
-
-  # Normalize for proper profile likelihood
-  observation_weights <- observation_weights / sum(observation_weights * m)
 
   sq <- logdet <- 0
   for (i in 1:n) {
@@ -57,59 +50,196 @@ like <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw, observation_wei
       LR <- x <- 0
     }
     sq <- sq + (sum(backsolve(U, rr, transpose = TRUE)^2)
-                - t(x) %*% LR %*% x) * observation_weights[i]
+                - t(x) %*% LR %*% x)
     logdet_tmp <- 0
     if (!is.null(warp_cov)) logdet_tmp <- determinant(LR)$modulus[1]
-    logdet <- logdet - (logdet_tmp - 2 * sum(log(diag(U)))) * observation_weights[i]
+    logdet <- logdet - (logdet_tmp - 2 * sum(log(diag(U))))
   }
-  logdet <- logdet - sum(observation_weights) * determinant(Cinv)$modulus[1]
+  logdet <- logdet - n * determinant(Cinv)$modulus[1]
 
-  sigmahat <- as.numeric(sq)
-  res <- log(sigmahat) + logdet
-
+  sigmahat <- as.numeric(sq / sum(m))
+  res <- sum(m) * log(sigmahat) + logdet
   return(res)
 }
 
-# #' Individual locally linearized likelihood function
-# #'
-# #' Computes the linearized likelihood for a single functional sample given the residual around a given warp and the corresponding Jacobians.
-# #' @param param variance parameters.
-# #' @param n_par vector consisting of number of variance parameters for each covariance function.
-# #' @param r residual.
-# #' @param Zi Jacobian in the warps of the mean function around the given warp.
-# #' @param amp_cov function for generating amplitude covariance matrix.
-# #' @param warp_cov function for generating warp covariance function
-# #' @param t time variable corresponding to r.
-# #' @param tw anchor points for warp variables.
-# #' @keywords likelihood
-# #' @keywords linearization
-#
-# like_ind <- function(param, n_par, r, Zi, amp_cov, warp_cov, t, tw) {
-#   amp_cov_par <- param[1:n_par[1]]
-#   warp_cov_par <- param[(n_par[1] + 1):length(param)]
-#
-#   C <- warp_cov(tw, warp_cov_par)
-#   Cinv <- chol2inv(chol(C))
-#   m <- length(r)
-#
-#   sq <- logdet <- 0
-#
-#   S <- amp_cov(t, amp_cov_par)
-#   U <- chol(S)
-#   A <- backsolve(U, backsolve(U, Zi, transpose = TRUE))
-#   LR <- chol2inv(chol(Cinv + Matrix::t(Zi) %*% A))
-#   x <- t(A) %*% r
-#   sq <- sq + (sum(backsolve(U, r, transpose = TRUE)^2)
-#               - t(x) %*% LR %*% x)
-#
-#   logdet <- logdet - (determinant(LR)$modulus[1]
-#                       - 2 * sum(log(diag(U)))) - determinant(Cinv)$modulus[1]
-#
-#   sigmahat <- 1 / m * as.numeric(sq)
-#   res <- m / 2 * log(sigmahat) + 1 / 2 * logdet
-#   res <- exp(-res)
-#   return(res)
-# }
+
+#' Locally linearized likelihood function cluster
+#'
+#' Computes the linearized likelihood given the residual around a given warp and the corresponding Jacobians.
+#' @param param variance parameters.
+#' @param n_par vector consisting of number of variance parameters for each covariance function.
+#' @param r residual.
+#' @param Zis list of Jacobians in the warps of the mean function around the given warp.
+#' @param amp_cov function for generating amplitude covariance matrix.
+#' @param warp_cov function for generating warp covariance function
+#' @param t array of time variables corresponding to r.
+#' @param tw anchor points for warp variables.
+#' @param observation_weights vector of weights for the individual functional samples to be applied to the likelihood. This is useful for clustering analysis.
+#' @keywords likelihood
+#' @keywords linearization
+#' @export
+#' @importFrom Matrix t
+
+like_clust <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw, observation_weights) {
+  if (is.null(observation_weights)) stop('Observation weights must be supplied.')
+  amp_cov_par <- param[1:n_par[1]]
+  warp_cov_par <- param[(n_par[1] + 1):length(param)]
+
+  if (!is.null(warp_cov)) {
+    C <- warp_cov(tw, warp_cov_par)
+    Cinv <- chol2inv(chol(C))
+  } else {
+    C <- Cinv <- matrix(0, length(tw), length(tw))
+  }
+
+  n <- length(t)
+  m <- sapply(t, length)
+  k <- ncol(observation_weights)
+
+  sq <- logdet <- 0
+
+  for (i in 1:n) {
+    # Construct covariance matrix
+    if (!is.null(amp_cov)) {
+      S <- amp_cov(t[[i]], amp_cov_par)
+      U <- chol(S)
+    } else {
+      # TODO: SPARSE MATRIX COULD MAKE IT FASTER, THEN 'diag' cannot be used for logdet
+      S <- U <- diag(1, m[i])
+    }
+
+    logdet_tmp <- 0
+
+    for (j in 1:k) {
+      rr <- r[[i]][[j]]
+      ZZ <- Zis[[i]][[j]]
+
+      if (!is.null(warp_cov)) {
+        A <- backsolve(U, backsolve(U, ZZ, transpose = TRUE))
+        LR <- chol2inv(chol(Cinv + Matrix::t(ZZ) %*% A))
+        x <- t(A) %*% rr
+        logdet_tmp <- logdet_tmp + determinant(LR)$modulus[1] * observation_weights[i, j]
+      } else {
+        LR <- x <- 0
+      }
+      sq <- sq + (sum(backsolve(U, rr, transpose = TRUE)^2)
+                  - t(x) %*% LR %*% x) * observation_weights[i, j]
+    }
+    logdet <- logdet - (logdet_tmp - 2 * sum(log(diag(U))))
+  }
+
+  logdet <- logdet - n * determinant(Cinv)$modulus[1]
+
+  sigmahat <- as.numeric(sq / sum(m))
+  res <- sum(m) * log(sigmahat) + logdet
+  return(res)
+}
+
+#' Maximum likelihood estimate of residual variance
+#'
+#' Computes the linearized likelihood given the residual around a given warp and the corresponding Jacobians.
+#' @param param variance parameters.
+#' @param n_par vector consisting of number of variance parameters for each covariance function.
+#' @param r residual.
+#' @param Zis list of Jacobians in the warps of the mean function around the given warp.
+#' @param amp_cov function for generating amplitude covariance matrix.
+#' @param warp_cov function for generating warp covariance function
+#' @param t array of time variables corresponding to r.
+#' @param tw anchor points for warp variables.
+#' @param observation_weights vector of weights for the individual functional samples to be applied to the likelihood. This is useful for clustering analysis.
+#' @keywords likelihood
+#' @keywords linearization
+#' @export
+#' @importFrom Matrix t
+
+
+sigmasq_clust <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw, observation_weights) {
+  if (is.null(observation_weights)) stop('Observation weights must be supplied.')
+  amp_cov_par <- param[1:n_par[1]]
+  warp_cov_par <- param[(n_par[1] + 1):length(param)]
+
+  if (!is.null(warp_cov)) {
+    C <- warp_cov(tw, warp_cov_par)
+    Cinv <- chol2inv(chol(C))
+  } else {
+    C <- Cinv <- matrix(0, length(tw), length(tw))
+  }
+
+  n <- length(t)
+  m <- sapply(t, length)
+  k <- ncol(observation_weights)
+
+  sq <- logdet <- 0
+
+  for (i in 1:n) {
+    # Construct covariance matrix
+    if (!is.null(amp_cov)) {
+      S <- amp_cov(t[[i]], amp_cov_par)
+      U <- chol(S)
+    } else {
+      # TODO: SPARSE MATRIX COULD MAKE IT FASTER, THEN 'diag' cannot be used for logdet
+      S <- U <- diag(1, m[i])
+    }
+    for (j in 1:k) {
+      rr <- r[[i]][[j]]
+      ZZ <- Zis[[i]][[j]]
+
+      if (!is.null(warp_cov)) {
+        A <- backsolve(U, backsolve(U, ZZ, transpose = TRUE))
+        LR <- chol2inv(chol(Cinv + Matrix::t(ZZ) %*% A))
+        x <- t(A) %*% rr
+      } else {
+        LR <- x <- 0
+      }
+      sq <- sq + (sum(backsolve(U, rr, transpose = TRUE)^2)
+                  - t(x) %*% LR %*% x) * observation_weights[i, j]
+    }
+  }
+  sigmahat <- as.numeric(sq / sum(m))
+
+  return(sigmahat)
+}
+
+#' Individual locally linearized likelihood function
+#'
+#' Computes the linearized likelihood for a single functional sample given the residual around a given warp and the corresponding Jacobians.
+#' @param param variance parameters.
+#' @param sigma_sq maximum likelihood estiamte for sigma_sq.
+#' @param n_par vector consisting of number of variance parameters for each covariance function.
+#' @param r residual.
+#' @param Zi Jacobian in the warps of the mean function around the given warp.
+#' @param amp_cov function for generating amplitude covariance matrix.
+#' @param warp_cov function for generating warp covariance function
+#' @param t time variable corresponding to r.
+#' @param tw anchor points for warp variables.
+#' @keywords likelihood
+#' @keywords linearization
+
+ind_like <- function(param, sigma_sq, n_par, r, Zi, amp_cov, warp_cov, t, tw) {
+  amp_cov_par <- param[1:n_par[1]]
+  warp_cov_par <- param[(n_par[1] + 1):length(param)]
+
+  C <- warp_cov(tw, warp_cov_par)
+  Cinv <- chol2inv(chol(C))
+  m <- length(r)
+
+  sq <- logdet <- 0
+
+  S <- amp_cov(t, amp_cov_par)
+  U <- chol(S)
+  A <- backsolve(U, backsolve(U, Zi, transpose = TRUE))
+  LR <- chol2inv(chol(Cinv + Matrix::t(Zi) %*% A))
+  x <- t(A) %*% r
+  sq <- sq + (sum(backsolve(U, r, transpose = TRUE)^2)
+              - t(x) %*% LR %*% x)
+
+  logdet <- logdet - (determinant(LR)$modulus[1]
+                      - 2 * sum(log(diag(U)))) - determinant(Cinv)$modulus[1]
+
+  res <- m / 2 * log(sigma_sq) + 1 / 2 * logdet + 1 / (2 * sigma_sq) * sq
+  res <- exp(-res)
+  return(res)
+}
 
 
 #' Noise scale estimate from locally linearized likelihood function
@@ -121,24 +251,19 @@ like <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw, observation_wei
 #' @export
 
 
-sigmasq <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw, observation_weights = NULL) {
+sigmasq <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw) {
   amp_cov_par <- param[1:n_par[1]]
   warp_cov_par <- param[(n_par[1] + 1):length(param)]
 
   if (!is.null(warp_cov)) {
-  C <- warp_cov(tw, warp_cov_par)
-  Cinv <- chol2inv(chol(C))
+    C <- warp_cov(tw, warp_cov_par)
+    Cinv <- chol2inv(chol(C))
   } else {
     C <- Cinv <- matrix(0, length(tw), length(tw))
   }
 
   n <- length(r)
   m <- sapply(r, length)
-
-  if (is.null(observation_weights)) observation_weights <- rep(1, n)
-
-  # Normalize for proper profile likelihood
-  observation_weights <- observation_weights / sum(observation_weights * m)
 
   sq <- 0
   for (i in 1:n) {
@@ -158,9 +283,9 @@ sigmasq <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw, observation_
       LR <- x <- 0
     }
     sq <- sq + (sum(backsolve(U, rr, transpose = TRUE)^2)
-                - t(x) %*% LR %*% x) * observation_weights[i]
-    }
-  sigmahat <- as.numeric(sq)
+                - t(x) %*% LR %*% x)
+  }
+  sigmahat <- as.numeric(sq / sum(m))
   return(sigmahat)
 }
 

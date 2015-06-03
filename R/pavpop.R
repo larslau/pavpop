@@ -1,18 +1,15 @@
+# TODO: Piecewise linear basis
 # TODO: AUTOMATICALLY REMOVE SIGMA SCALE PARAMETER IF INCLUDED
-# TODO: TERMINATE OUTER ITERATIONS WHEN CONVERGED
 # TODO: TEST PARALLEL LIKELIHOOD FOR MANY SAMPLES
 # TODO: MAKE SINGLE CLUSTER LIKELIHOOD (EASY!)
 # TODO: MAKE DETAILS SECTION IN DOCUMENTATION
 # TODO: UPDATE DOCUMENTATION
 # TODO: INCORPORATE SCALING OF t VALUES NATURALLY
-# TODO: SUPPLY WARPING FUNCTION
 # TODO: PYRAMID SCHEME! (2 types) (ALSO ndeps)
 # TODO: AUTOMATICALLY INITIALIZE!
 # TODO: MAKE HARD HOMEOMORPHIC CONSTRAINTS POSSIBLE
 # TODO LATER: MAKE LARGE WARPS POSSIBLE (AND CHEAP)
 # TODO LATER: ALLOW LARGE m (USING SPARSE CHOL)
-# TODO LATER: ALLOW SHIFT WARPS
-# TODO: CHOOSE BEST LINEARIZED LIKELIHOOD
 # TODO: FREE WARP COVARIANCE, ALREADY POSSIBLE?!
 # TODO: REML
 # TODO: ALLOW SOLUTION METHODS IN COVARIANCES AND BASIS
@@ -113,11 +110,11 @@
 #' for (i in 1:n) lines(t_orig, t_range[2] * warp_fct(res$w[,i], t[[i]]), lwd = 0.2)
 #'
 
-pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, iter = c(5, 5), use_warp_gradient = FALSE, homeomorphisms = 'no', like_optim_control = list()) {
+pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, iter = c(5, 5), parallel = list(n_cores = 1, parallel_likelihood = FALSE), use_warp_gradient = FALSE, homeomorphisms = 'no', like_optim_control = list()) {
   nouter <- iter[1] + 1
   if (is.null(amp_cov) & is.null(warp_cov)) nouter <- 1
   ninner <- iter[2]
-
+  halt_iteration <- FALSE
   # Set size parameters
   n <- length(y)
   m <- sapply(y, length)
@@ -147,6 +144,9 @@ pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, i
   }
   # Update m with cleaned data
   m <- sapply(y, length)
+
+  # Initialize cluster
+  registerDoParallel(cores = parallel$n_cores)
 
   # Initialize warp parameters
   w <- array(attr(warp_fct, 'init'), dim = c(mw, n))
@@ -182,7 +182,6 @@ pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, i
   c <- spline_weights(y, t, warp_fct, w, Sinv, basis_fct)
 
   # Construct warp derivative
-  #TODO: CHECK RESULT FOR SMOOTH WARPING FUNCTION!!
   dwarp <- list()
   if (warp_type != 'smooth') {
     for (i in 1:n) {
@@ -191,10 +190,18 @@ pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, i
     }
   }
 
+  # Initialize best parameters
+  like_best <- Inf
+  w_best <- w
+  c_best <- c
+  amp_cov_par_best <- amp_cov_par
+  warp_cov_par_best <- warp_cov_par
 
+  cat('Outer\t:\tInner \t:\tEstimates\n')
   for (iouter in 1:nouter) {
+    if (halt_iteration & iouter != nouter) next
     # Outer loop
-    if (iouter != nouter) cat(iouter, ':\t')
+    if (iouter != nouter) cat(iouter, '\t:\t')
     for (iinner in 1:ninner) {
       # Inner loop
       if (iouter != nouter | nouter == 1) cat(iinner, '\t')
@@ -205,19 +212,21 @@ pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, i
         #TODO: constrainOptim
         stop("Hard homeomorphic constrained optimization for warps is not implemented.")
       } else {
-        for (i in 1:n) {
+        # Parallel prediction of warping parameters
+        w_res <- foreach(i = 1:n) %dopar% {
           gr <- NULL
           warp_optim_method <- 'Nelder-Mead'
-          #             if (use_warp_gradient) {
-          #               gr <- function(w, t, y, tw, c, Ainv, Cinv, kts, intercept) posterior_grad(w, dwarp[[i]], t, y, tw, c, Ainv, Cinv, kts, intercept)
-          #               warp_optim_method <- 'BFGS'
-          #             }
-          w_tmp <- optim(par = w[, i], fn = posterior, gr = gr, method = warp_optim_method, warp_fct = warp_fct, t = t[[i]], y = y[[i]], c = c, Sinv = Sinv[[i]], Cinv = Cinv, basis_fct = basis_fct)$par
-          warp_change[1] <- warp_change[1] + sum((w[, i] - w_tmp)^2)
-          warp_change[2] <- max(warp_change[2], abs(w[, i] - w_tmp))
-          w[, i] <- w_tmp
-          if (homeomorphisms == 'soft') w[, i] <- make_homeo(w[, i], tw)
+          ww <- optim(par = w[, i], fn = posterior, gr = gr, method = warp_optim_method, warp_fct = warp_fct, t = t[[i]], y = y[[i]], c = c, Sinv = Sinv[[i]], Cinv = Cinv, basis_fct = basis_fct)$par
+          if (homeomorphisms == 'soft') ww <- make_homeo(ww, tw)
+          return(ww)
         }
+
+        for (i in 1:n) {
+          warp_change[1] <- warp_change[1] + sum((w[, i] - w_res[[i]])^2)
+          warp_change[2] <- max(warp_change[2], abs(w[, i] -  w_res[[i]]))
+        }
+
+        for (i in 1:n) w[, i] <- w_res[[i]]
       }
 
       # Update spline weights
@@ -243,47 +252,100 @@ pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, i
 
     # Check wheter the final outer loop has been reached
     if (iouter != nouter) {
+      # Likelihood function
+      like_fct <- function(par) {
+        like(par, n_par = c(n_par_amp, n_par_warp), r = r, Zis = Zis, amp_cov = amp_cov, warp_cov = warp_cov, t = t, tw = tw)
+      }
+
+      # Likelihood gradient
+      like_gr <- NULL
+      if (parallel$parallel_likelihood) {
+        # Construct parallel gradient
+        like_gr <- function(par) {
+          epsilon <- 1e-5
+          rep(1:length(par), each = 2)
+          res <- foreach(ip = 1:length(par), .combine = 'c') %:%
+            foreach(sign = c(1, -1), .combine= '-') %dopar% {
+              h <- rep(0, length(par))
+              h[ip] <- sign * epsilon
+              return(like_fct(par + h) / (2 * epsilon))
+            }
+          return(res)
+        }
+      } else {
+        # Construct parallel gradient
+        like_gr <- function(par) {
+          epsilon <- 1e-5
+          rep(1:length(par), each = 2)
+          res <- rep(0, length(par))
+          for (ip in  1:length(par)) {
+            for (sign in c(1, -1)) {
+              h <- rep(0, length(par))
+              h[ip] <- sign * epsilon
+              res[ip] <- res[ip] + sign * like_fct(par + h) / (2 * epsilon)
+            }
+          }
+          return(res)
+        }
+      }
+
       # Estimate parameters using locally linearized likelihood
-      lower  <- if (is.null(like_optim_control$lower)) rep(1e-5, n_par_amp + n_par_warp) else like_optim_control$lower
+      lower  <- if (is.null(like_optim_control$lower)) rep(1e-3, n_par_amp + n_par_warp) else like_optim_control$lower
       upper  <- if (is.null(like_optim_control$upper)) rep(Inf, n_par_amp + n_par_warp) else like_optim_control$upper
       method <- if (is.null(like_optim_control$method)) "L-BFGS-B" else like_optim_control$method
       ndeps <- if (is.null(like_optim_control$ndeps)) rep(1e-3, n_par_amp + n_par_warp) else like_optim_control$ndeps
 
-      param <- optim(c(amp_cov_par, warp_cov_par), like, n_par = c(n_par_amp, n_par_warp), r = r, Zis = Zis, amp_cov = amp_cov, warp_cov = warp_cov, t = t, tw = tw, method = method, lower = lower, upper = upper, control = list(ndeps = ndeps, maxit = 20))$par
+      like_optim <- optim(c(amp_cov_par, warp_cov_par), like_fct, gr = like_gr, method = method, lower = lower, upper = upper, control = list(ndeps = ndeps, maxit = 20))
+      param <- like_optim$par
 
       if (!is.null(amp_cov)) amp_cov_par <- param[1:n_par_amp]
       if (!is.null(warp_cov)) warp_cov_par <- param[(n_par_amp + 1):length(param)]
 
-      # Update covariances
-      S <- Sinv <- list()
-      for (i in 1:n) {
-        # Check if an amplitude covariance is defined
-        if (!is.null(amp_cov)) {
-          S[[i]] <- amp_cov(t[[i]], amp_cov_par)
-          if (inv_amp) {
-            Sinv[[i]] <- inv_amp_cov(t[[i]], amp_cov_par)
+      if (like_optim$value <= like_best) {
+        # Save parameters
+        like_best <- like_optim$value
+        w_best <- w
+        c_best <- c
+        amp_cov_par_best <- amp_cov_par
+        warp_cov_par_best <- warp_cov_par
+
+        # Update covariances
+        S <- Sinv <- list()
+        for (i in 1:n) {
+          # Check if an amplitude covariance is defined
+          if (!is.null(amp_cov)) {
+            S[[i]] <- amp_cov(t[[i]], amp_cov_par)
+            if (inv_amp) {
+              Sinv[[i]] <- inv_amp_cov(t[[i]], amp_cov_par)
+            } else {
+              Sinv[[i]] <- chol2inv(chol(S[[i]]))
+            }
           } else {
-            Sinv[[i]] <- chol2inv(chol(S[[i]]))
+            S[[i]] <- Sinv[[i]] <- Diagonal(m[i], x = 1)
           }
-        } else {
-          S[[i]] <- Sinv[[i]] <- Diagonal(m[i], x = 1)
         }
-      }
 
-      if (!is.null(warp_cov)) {
-        C <- warp_cov(tw, warp_cov_par)
-        Cinv <- solve(C)
+        if (!is.null(warp_cov)) {
+          C <- warp_cov(tw, warp_cov_par)
+          Cinv <- solve(C)
+        } else {
+          C <- Cinv <- matrix(0, mw, mw)
+        }
+        cat(':\t', param, '\n')
+        cat('Linearized likelihood:\t', like_best, '\n')
       } else {
-        C <- Cinv <- matrix(0, mw, mw)
+        cat(':\tLikelihood not improved, returning best likelihood estimates.\n')
+        halt_iteration <- TRUE
       }
-
-
     } else {
+      # TODO: Should in principle be done before warps are updated in the final iteration!
       # Estimate of sigma if final iteration is reached
+      if (nouter == 1) {
+        w_best <- w
+        c_best <- c
+      }
       sigma <- sqrt(sigmasq(c(amp_cov_par, warp_cov_par), c(n_par_amp, n_par_warp), r, Zis, amp_cov, warp_cov, t, tw))
     }
-
-    if (iouter != nouter) cat(':\t', param, '\n')
   }
-  return(list(c = c, w = w, amp_cov_par = amp_cov_par, warp_cov_par = warp_cov_par, sigma = sigma))
+  return(list(c = c_best, w = w_best, amp_cov_par = amp_cov_par_best, warp_cov_par = warp_cov_par_best, sigma = sigma))
 }

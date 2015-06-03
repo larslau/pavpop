@@ -1,0 +1,12 @@
+---
+title: "PAVPOC models"
+author: "Lars Lau Raket"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+In this vignette, we will consider phase and amplitude varying population cluster (PAVPOC) models. 

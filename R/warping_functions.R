@@ -34,9 +34,9 @@ make_warp_fct <- function(type = c('shift', 'linear', 'piecewise-linear', 'smoot
     }
     attr(v, 'initialize') <- c(0, 1)
     attr(v, 'mw') <- 2
-  } else if (type == 'piecewise linear') {
-    if (any(is.na(tw))) stop('all anchor points tw should be supplied for type \'piecewise linear\'')
-    if (min(tw) < 0 | max(tw) > 0) stop('anchor points tw should be within the interval (0, 1)')
+  } else if (type == 'piecewise-linear') {
+    if (any(is.na(tw))) stop('all anchor points tw should be supplied for type \'piecewise-linear\'')
+    if (min(tw) < 0 | max(tw) > 1) stop('anchor points tw should be within the interval (0, 1)')
     mw <- length(tw)
 
     v <- function(w, t, w_grad = FALSE) {
