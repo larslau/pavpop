@@ -68,7 +68,7 @@ make_warp_fct <- function(type = c('shift', 'linear', 'piecewise-linear', 'smoot
       x <- c(0, tw, 1)
       y <- c(0, tw + w, 1)
       if (!all(diff(y) > 0)) {
-        y <- c(0, tw + make_homeo(w, tw, epsilon = 0.2), 1)
+        y <- c(0, tw + make_homeo(w, tw, epsilon = 0.1), 1)
       }
       if (!w_grad){
         return(spline(x, y, xout = t, method = 'hyman')$y)
