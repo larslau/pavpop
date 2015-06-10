@@ -23,7 +23,6 @@ pavpoc <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, c
   nouter <- iter[2] + 1
   if (is.null(amp_cov) & is.null(warp_cov)) nouter <- 1
   ninner <- iter[3]
-  halt_iteration <- FALSE
   # Set size parameters
   n <- length(y)
   m <- sapply(y, length)
@@ -125,6 +124,7 @@ pavpoc <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, c
 
   # cat('Outer\t:\tInner \t:\tEstimates\n')
   for (i_clust in 1:n_clust_iter) {
+    halt_iteration <- FALSE
     cat('\nCluster iteration ', i_clust, '\n')
     for (iouter in 1:nouter) {
       if (halt_iteration & iouter != nouter) next
