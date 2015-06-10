@@ -68,7 +68,6 @@ make_warp_fct <- function(type = c('shift', 'linear', 'piecewise-linear', 'smoot
       x <- c(0, tw, 1)
       y <- c(0, tw + w, 1)
       if (!all(diff(y) > 0)) {
-        www <<- w
         y <- c(0, tw + make_homeo(w, tw, epsilon = 0.2), 1)
       }
       if (!w_grad){
