@@ -77,6 +77,21 @@ Brownian <- function(t, param = c(tau = 1), type = 'motion') {
 }
 attr(Brownian, 'stationary') <- FALSE
 
+#' Constant shift covariance
+#'
+#' Constant shift covariance. Note, the resulting covariance matrix is only positive definite if noise is added.
+#' @param t two-dimensional vector of evaluation points.
+#' @param param parameter vector consisting of scale parameter tau.
+#' @keywords covariance
+#' @export
+
+const_cov <- function(t, param = c(scale = 1)) {
+  return(matrix(param, length(t), length(t)))
+}
+attr(const_cov, 'discrete') <- TRUE
+attr(const_cov, 'stationary') <- TRUE
+
+
 #' Generate covariance matrix function from covariance function
 #'
 #' Function that takes a covariance function and returns a function that generates covariance matrices with the given covariance function
@@ -89,7 +104,12 @@ attr(Brownian, 'stationary') <- FALSE
 make_cov_fct <- function(cov_fct, noise = TRUE, param = NULL, inv_cov_fct = NULL, ...) {
   if (!is.null(attr(cov_fct, 'discrete'))) {
     if (attr(cov_fct, 'discrete')) {
-      f <- cov_fct
+      if (noise) {
+        f <- function(t, param) cov_fct(t, param) + id_cov(t)
+      } else {
+        f <- cov_fct
+      }
+
     } else {
       stop('attribute \'discrete\' should be NULL for non-discrete covariances.')
     }

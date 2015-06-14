@@ -1,3 +1,7 @@
+# TODO: Add pi weights to best_like to avoid group collapses (will this ever be a problem?)
+# TODO: Special case clustering: k = 1 for different parameters
+
+
 #' Estimate parameters and predict warps for curve data
 #'
 #' This function does likelihood estimation in the model \deqn{y_i(t)=\theta(v(t, w_i))+x_i(t)+\epsilon_i(t)} based on iterative local linearization of the model around predictions of the random warping parameters \eqn{w_i}.
@@ -109,7 +113,7 @@ pavpoc <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, c
     for (i in 1:n) {
       dwarp[[i]] <- list()
       for (j in 1:k) {
-        dwarp[[i]][[j]] <- warp_fct(t[[i]], w[, i, j], w_grad = TRUE)
+        dwarp[[i]][[j]] <- warp_fct(w[, i, j], t[[i]], w_grad = TRUE)
         if (warp_type == 'piecewise linear') dwarp[[i]][[j]] <- as(dwarp[[i]][[j]], "dgCMatrix")
       }
     }
@@ -163,7 +167,7 @@ pavpoc <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, c
             }
 
             # Update spline weights
-            c[[j]] <- spline_weights(y, t, warp_fct, w[,, j], Sinv, basis_fct, weights)
+            c[[j]] <- spline_weights(y, t, warp_fct, w[,, j], Sinv, basis_fct, weights[, j])
             # Break inner iteration if change is small
             if (warp_change[2] < 1e-2 / sqrt(mw)) break #TODO: Consider other criteria
           }
@@ -253,9 +257,9 @@ pavpoc <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, c
           }
         }
 
-        if (like_optim$value <= like_best) {
+        if (like_optim$value - sum(log(pi)) <= like_best) {
           # Save parameters
-          like_best <- like_optim$value
+          like_best <- like_optim$value - sum(log(pi))
           w_best <- w
           c_best <- c
           amp_cov_par_best <- amp_cov_par
@@ -302,5 +306,5 @@ pavpoc <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, c
     pi <- colMeans(weights)
 
   }
-  return(list(c = c_best, weights = weights, w = w_best, amp_cov_par = amp_cov_par_best, warp_cov_par = warp_cov_par_best, sigma = sigma))
+  return(list(c = c_best, weights = weights, w = w_best, amp_cov_par = amp_cov_par_best, warp_cov_par = warp_cov_par_best, sigma = sigma, likelihood = like_best, ind_likelihood = ind_like))
 }

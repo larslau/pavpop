@@ -55,8 +55,7 @@ like <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw) {
     if (!is.null(warp_cov)) logdet_tmp <- determinant(LR)$modulus[1]
     logdet <- logdet - (logdet_tmp - 2 * sum(log(diag(U))))
   }
-  logdet <- logdet - n * determinant(Cinv)$modulus[1]
-
+  if (!is.null(warp_cov)) logdet <- logdet - n * determinant(Cinv)$modulus[1]
   sigmahat <- as.numeric(sq / sum(m))
   res <- sum(m) * log(sigmahat) + logdet
   return(res)
@@ -128,7 +127,7 @@ like_clust <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw, observati
     logdet <- logdet - (logdet_tmp - 2 * sum(log(diag(U))))
   }
 
-  logdet <- logdet - n * determinant(Cinv)$modulus[1]
+  if (!is.null(warp_cov)) logdet <- logdet - n * determinant(Cinv)$modulus[1]
 
   sigmahat <- as.numeric(sq / sum(m))
   res <- sum(m) * log(sigmahat) + logdet
@@ -219,22 +218,36 @@ ind_like <- function(param, sigma_sq, n_par, r, Zi, amp_cov, warp_cov, t, tw) {
   amp_cov_par <- param[1:n_par[1]]
   warp_cov_par <- param[(n_par[1] + 1):length(param)]
 
-  C <- warp_cov(tw, warp_cov_par)
-  Cinv <- chol2inv(chol(C))
+  if (!is.null(warp_cov)) {
+    C <- warp_cov(tw, warp_cov_par)
+    Cinv <- chol2inv(chol(C))
+  } else {
+    C <- Cinv <- matrix(0, length(tw), length(tw))
+  }
   m <- length(r)
 
   sq <- logdet <- 0
 
-  S <- amp_cov(t, amp_cov_par)
-  U <- chol(S)
-  A <- backsolve(U, backsolve(U, Zi, transpose = TRUE))
-  LR <- chol2inv(chol(Cinv + Matrix::t(Zi) %*% A))
-  x <- t(A) %*% r
+  if (!is.null(amp_cov)) {
+    S <- amp_cov(t, amp_cov_par)
+    U <- chol(S)
+  } else {
+    S <- U <- diag(1, m)
+  }
+
+  if (!is.null(warp_cov)) {
+    A <- backsolve(U, backsolve(U, Zi, transpose = TRUE))
+    LR <- chol2inv(chol(Cinv + Matrix::t(Zi) %*% A))
+    x <- t(A) %*% r
+    logdet <- logdet - determinant(LR)$modulus[1]
+  } else {
+    LR <- x <- 0
+  }
   sq <- sq + (sum(backsolve(U, r, transpose = TRUE)^2)
               - t(x) %*% LR %*% x)
 
-  logdet <- logdet - (determinant(LR)$modulus[1]
-                      - 2 * sum(log(diag(U)))) - determinant(Cinv)$modulus[1]
+  logdet <- logdet + 2 * sum(log(diag(U)))
+  if (!is.null(warp_cov)) logdet <- logdet - determinant(Cinv)$modulus[1]
 
   res <- m / 2 * log(sigma_sq) + 1 / 2 * logdet + 1 / (2 * sigma_sq) * sq
   res <- exp(-res)
