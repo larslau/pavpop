@@ -32,7 +32,7 @@ make_basis_fct <- function(kts, intercept = FALSE, increasing = FALSE, order = 3
       if (deriv) basis <- (basis - bs(t - deriv * epsilon, knots = kts, degree = order, Boundary.knots = boundary, intercept = intercept)) / (2 * epsilon)
       return(basis[])
     }
-    
+
   }
   attr(b, 'df') <- length(kts) + order - 2 * increasing + intercept
   attr(b, 'intercept') <- intercept
@@ -70,7 +70,7 @@ ispline <- function (x, knots, d) {
     Dt[1L:(m + i - 3L) * (m + i - 2L)] <- -ti
     M <- (M * x) %*% Dx + M %*% Dt
   }
-  M <- M[, -1]
+  M <- M[, -1, drop = FALSE]
   S <- array(1, dim = rep(NCOL(M), 2))
   S[upper.tri(S)] <- 0
   I <- M %*% S
