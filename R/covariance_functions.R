@@ -119,8 +119,10 @@ make_cov_fct <- function(cov_fct, noise = TRUE, param = NULL, inv_cov_fct = NULL
       f <- function (t, param) {
         m <- length(t)
         S <- diag(cov_fct(0, param, ...) + noise, m)
-        for (i in 1:(m - 1)) {
-          S[i, (i + 1):m] <- S[(i + 1):m, i] <- cov_fct(abs(t[i] - t[(1 + i):m]), param, ...)
+        if (m > 1) {
+          for (i in 1:(m - 1)) {
+            S[i, (i + 1):m] <- S[(i + 1):m, i] <- cov_fct(abs(t[i] - t[(1 + i):m]), param, ...)
+          }
         }
         return(S)
       }
