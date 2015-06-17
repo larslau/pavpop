@@ -17,7 +17,9 @@ make_basis_fct <- function(kts, intercept = FALSE, increasing = FALSE, order = 3
     b <- function(t, deriv = FALSE) {
       basis <- ispline(t + deriv * epsilon, knots = kts, d = order)
       if (deriv) basis <- (basis - ispline(t - deriv * epsilon, knots = kts, d = order)) / (2 * epsilon)
-      if (intercept) basis <- cbind(!deriv, basis)
+      if (intercept) {
+        basis <- cbind(!deriv, matrix(basis, ncol = length(kts)))
+      }
       dims <- dim(basis)
       basis <- as.numeric(basis)
       dim(basis) <- dims
@@ -30,7 +32,7 @@ make_basis_fct <- function(kts, intercept = FALSE, increasing = FALSE, order = 3
       if (deriv) basis <- (basis - bs(t - deriv * epsilon, knots = kts, degree = order, Boundary.knots = boundary, intercept = intercept)) / (2 * epsilon)
       return(basis[])
     }
-
+    
   }
   attr(b, 'df') <- length(kts) + order - 2 * increasing + intercept
   attr(b, 'intercept') <- intercept
