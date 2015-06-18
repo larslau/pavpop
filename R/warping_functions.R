@@ -68,7 +68,7 @@ make_warp_fct <- function(type = c('shift', 'linear', 'piecewise-linear', 'smoot
       x <- c(0, tw, 1)
       y <- c(0, tw + w, 1)
       if (!all(diff(y) > 0)) {
-        y <- c(0, tw + make_homeo(w, tw, epsilon = 0.2), 1)
+        y <- c(0, tw + make_homeo(w, tw, epsilon = 0.1), 1)
       }
       if (!w_grad){
         return(spline(x, y, xout = t, method = 'hyman')$y)
@@ -110,10 +110,10 @@ make_homeo <- function(w, tw, epsilon = 0.1) {
   ui <- diag(1, nrow = nw)
   ui <- rbind(ui, rep(0, nw))
   ui[cbind(2:(nw + 1), 1:nw)] <- -1
-  ci <- rep(-1 / (nw + 1), nw + 1)
-  epsilon <- epsilon / (nw + 1)
+
+  ci <- (epsilon - 1) * diff(c(0, tw, 1))
   res <- constrOptim(theta = rep(0, nw), f = function(x) mean((x - w)^2),
-                     grad = function(x) 2 / nw * (x - w), ui = ui, ci = (ci + epsilon), method = "BFGS")
+                     grad = function(x) 2 / nw * (x - w), ui = ui, ci = ci, method = "BFGS")
 
   return(res$par)
 }
