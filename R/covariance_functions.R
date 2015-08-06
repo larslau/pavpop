@@ -172,8 +172,8 @@ cov_rect <- function(t, t_p, cov_fct, param, ...) {
   } else {
     # Non-stationary covariance, fill in all entries separately
     for (i in 1:m_p) {
-      for (j in i:m) {
-        S[i, j] <- S[j, i] <- cov_fct(c(t_p[i], t[j]), param, ...)
+      for (j in 1:m) {
+        S[i, j] <- cov_fct(c(t_p[i], t[j]), param, ...)
       }
     }
   }

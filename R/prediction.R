@@ -17,6 +17,8 @@
 #' @keywords curve prediction
 #' @export
 
+#TODO: NO WARP!
+
 predict_curve <- function(t_p, t, y, c, basis_fct, warp_fct, amp_cov, amp_cov_par, w, deriv = FALSE) {
   S <- amp_cov(t, amp_cov_par)
   S_p <- cov_rect(t, t_p, attr(amp_cov, 'cov_fct'), amp_cov_par)
