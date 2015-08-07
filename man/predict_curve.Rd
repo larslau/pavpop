@@ -4,8 +4,8 @@
 \alias{predict_curve}
 \title{Predict individual curves}
 \usage{
-predict_curve(t_p, t, y, c, basis_fct, warp_fct, amp_cov, amp_cov_par, w,
-  deriv = FALSE)
+predict_curve(t_p, t, y, c, basis_fct, warp_fct, amp_cov, amp_cov_par,
+  w = NULL, warp_cov = NULL, warp_cov_par = NULL, deriv = FALSE)
 }
 \arguments{
 \item{t_p}{evaluation points for prediction.}

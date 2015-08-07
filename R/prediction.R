@@ -1,5 +1,6 @@
 # TODO: Include possibility for scaling of results
 # TODO: Automatic handeling of derivatives
+# TODO: Make faster for non-stationary Matern covariance (smarter rectangular covariance function!)
 
 #' Predict individual curves
 #'
@@ -17,12 +18,21 @@
 #' @keywords curve prediction
 #' @export
 
-#TODO: NO WARP!
-
-predict_curve <- function(t_p, t, y, c, basis_fct, warp_fct, amp_cov, amp_cov_par, w, deriv = FALSE) {
+predict_curve <- function(t_p, t, y, c, basis_fct, warp_fct, amp_cov, amp_cov_par, w = NULL, warp_cov = NULL, warp_cov_par = NULL, deriv = FALSE) {
   S <- amp_cov(t, amp_cov_par)
   S_p <- cov_rect(t, t_p, attr(amp_cov, 'cov_fct'), amp_cov_par)
   Ainv <- chol2inv(chol(S))
+
+  if (is.null(w)) {
+    if (is.null(warp_cov) | is.null(warp_cov_par)) {
+      stop('Warp covariance function and warp covariance parameters must be supplied if no warping parameters are given.')
+    }
+    tw <- attr(warp_fct, 'tw')
+    mw <- attr(warp_fct, 'mw')
+    Cinv <- solve(warp_cov(tw, warp_cov_par))
+    w <- optim(par = rep(0, mw), fn = posterior, warp_fct = warp_fct, t = t, y = y, c = c, Sinv = Ainv, Cinv = Cinv, basis_fct = basis_fct)$par
+    w <- make_homeo(w, tw)
+  }
 
   basis <- basis_fct(warp_fct(w, t_p))
 

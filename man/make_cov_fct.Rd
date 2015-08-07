@@ -4,12 +4,17 @@
 \alias{make_cov_fct}
 \title{Generate covariance matrix function from covariance function}
 \usage{
-make_cov_fct(cov_fct, noise = TRUE, param = NULL, inv_cov_fct = NULL, ...)
+make_cov_fct(cov_fct, noise = TRUE, param = NULL, inv_cov_fct = NULL,
+  ns = NULL, ...)
 }
 \arguments{
 \item{cov_fct}{covariance function.}
 
 \item{noise}{logical. Should an identity matrix be added to the covariance matrix?}
+
+\item{param}{standard values of parameters}
+
+\item{ns}{list of arguments to make a stationary covariance locally adaptive.}
 
 \item{...}{arguments passed to cov_fct.}
 }

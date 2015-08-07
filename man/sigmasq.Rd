@@ -2,69 +2,30 @@
 % Please edit documentation in R/likelihood_functions.R
 \name{sigmasq}
 \alias{sigmasq}
-\title{#Individual locally linearized likelihood function
-#
-#Computes the linearized likelihood for a single functional sample given the residual around a given warp and the corresponding Jacobians.
-#}
+\title{Noise scale estimate from locally linearized likelihood function}
 \usage{
-sigmasq(param, n_par, r, Zis, amp_cov, warp_cov, t, tw,
-  observation_weights = NULL)
+sigmasq(param, n_par, r, Zis, amp_cov, warp_cov, t, tw)
 }
 \arguments{
-\item{param}{variance parameters.
-#}
+\item{param}{variance parameters.}
 
-\item{n_par}{vector consisting of number of variance parameters for each covariance function.
-#}
+\item{n_par}{vector consisting of number of variance parameters for each covariance function.}
 
-\item{r}{residual.
-#}
+\item{r}{residual.}
 
 \item{Zis}{list of Jacobians in the warps of the mean function around the given warp.}
 
-\item{amp_cov}{function for generating amplitude covariance matrix.
-#}
+\item{amp_cov}{function for generating amplitude covariance matrix.}
 
-\item{warp_cov}{function for generating warp covariance function
-#}
+\item{warp_cov}{function for generating warp covariance function}
 
-\item{t}{time variable corresponding to r.
-#}
+\item{t}{array of time variables corresponding to r.}
 
-\item{tw}{anchor points for warp variables.
-#}
-
-\item{observation_weights}{vector of weights for the individual functional samples to be applied to the likelihood. This is useful for clustering analysis.}
-
-\item{Zi}{Jacobian in the warps of the mean function around the given warp.
-#}
+\item{tw}{anchor points for warp variables.}
 }
 \description{
-#Individual locally linearized likelihood function
-#
-#Computes the linearized likelihood for a single functional sample given the residual around a given warp and the corresponding Jacobians.
-#
+Computes the noise scale estimate from the linearized likelihood given the residual around a predicted warp and the corresponding Jacobians.
 }
-\keyword{#}
-\keyword{Computes}
-\keyword{Jacobians.}
-\keyword{Noise}
-\keyword{a}
-\keyword{and}
-\keyword{around}
-\keyword{corresponding}
-\keyword{estimate}
-\keyword{from}
-\keyword{function}
-\keyword{given}
 \keyword{likelihood}
 \keyword{linearization}
-\keyword{linearized}
-\keyword{locally}
-\keyword{noise}
-\keyword{predicted}
-\keyword{residual}
-\keyword{scale}
-\keyword{the}
-\keyword{warp}
 

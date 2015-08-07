@@ -73,7 +73,7 @@ attr(Matern, 'stationary') <- TRUE
 Brownian <- function(t, param = c(tau = 1), type = 'motion') {
   tau <- param[[1]]
   is_bridge <- type == 'bridge'
-  return(tau^2 * (min(t[1], t[2]) - is_bridge * t[1] * t[2]))
+  return(tau^2 * (min(t) - is_bridge * prod(t)))
 }
 attr(Brownian, 'stationary') <- FALSE
 
@@ -97,11 +97,14 @@ attr(const_cov, 'stationary') <- TRUE
 #' Function that takes a covariance function and returns a function that generates covariance matrices with the given covariance function
 #' @param cov_fct covariance function.
 #' @param noise logical. Should an identity matrix be added to the covariance matrix?
+#' @param param standard values of parameters
+#' @param ns list of arguments to make a stationary covariance locally adaptive.
 #' @param ... arguments passed to cov_fct.
 #' @export
 
+#TODO: EXAMPLE
 
-make_cov_fct <- function(cov_fct, noise = TRUE, param = NULL, inv_cov_fct = NULL, ...) {
+make_cov_fct <- function(cov_fct, noise = TRUE, param = NULL, inv_cov_fct = NULL, ns = NULL, ...) {
   if (!is.null(attr(cov_fct, 'discrete'))) {
     if (attr(cov_fct, 'discrete')) {
       if (noise) {
@@ -115,16 +118,32 @@ make_cov_fct <- function(cov_fct, noise = TRUE, param = NULL, inv_cov_fct = NULL
     }
   } else {
     if (attr(cov_fct, 'stationary')) {
-      # stationary covariance, fill rows and columns simultaneously
-      f <- function (t, param) {
-        m <- length(t)
-        S <- diag(cov_fct(0, param, ...) + noise, m)
-        if (m > 1) {
-          for (i in 1:(m - 1)) {
-            S[i, (i + 1):m] <- S[(i + 1):m, i] <- cov_fct(abs(t[i] - t[(1 + i):m]), param, ...)
+      if (is.null(ns)) {
+        # stationary covariance, fill rows and columns simultaneously
+        f <- function (t, param) {
+          m <- length(t)
+          S <- diag(cov_fct(0, param, ...) + noise, m)
+          if (m > 1) {
+            for (i in 1:(m - 1)) {
+              S[i, (i + 1):m] <- S[(i + 1):m, i] <- cov_fct(abs(t[i] - t[(1 + i):m]), param, ...)
+            }
           }
+          return(S)
         }
-        return(S)
+      } else {
+        # ns = list(knots = 4)
+        knots <- ns$knots
+        f <- function (t, param) {
+          ns <- spline(seq(0, 1, length = knots), c(1, param[1:(knots - 1)]), xout = t)$y
+          m <- length(t)
+          S <- diag(cov_fct(0, param[-(1:(knots - 1))], ...), m)
+          if (m > 1) {
+            for (i in 1:(m - 1)) {
+              S[i, (i + 1):m] <- S[(i + 1):m, i] <- cov_fct(abs(t[i] - t[(1 + i):m]), param[-(1:(knots - 1))], ...)
+            }
+          }
+          return(ns %*% t(ns) * S + diag(1, nrow = length(t)))
+        }
       }
     } else {
       # Non-stationary covariance, fill in all entries separately
@@ -148,6 +167,16 @@ make_cov_fct <- function(cov_fct, noise = TRUE, param = NULL, inv_cov_fct = NULL
   # Set the scale parameter
   attr(f, 'scale') <- ifelse(is.null(formals(cov_fct)$param$scale), NA, which(names(formals(cov_fct)$param) == 'scale') - 1)
   attr(f, 'cov_fct') <- cov_fct
+  attr(f, 'noise') <- noise
+  # If the covariance has been made non-stationary, modify
+  if (!is.null(ns)) {
+    attr(f, 'param') <- c(local_scale = rep(1, ns$knots - 1), param)
+    ns_cov_fct <- function(t, param) {
+      prod(spline(seq(0, 1, length = ns$knots), c(1, param[1:(ns$knots - 1)]), xout = t)$y) * cov_fct(abs(diff(t)), param[-(1:(ns$knots - 1))])
+    }
+    attr(ns_cov_fct, 'stationary') <- FALSE
+    attr(f, 'cov_fct') <- ns_cov_fct
+  }
   return(f)
 }
 

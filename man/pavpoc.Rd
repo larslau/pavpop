@@ -5,7 +5,7 @@
 \title{Estimate parameters and predict warps for curve data}
 \usage{
 pavpoc(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL,
-  cluster = list(n_clusters = 1, weights = NULL), iter = c(5, 5, 10),
+  cluster = list(n_clusters = 1, weights = NULL), iter = c(10, 5, 5),
   parallel = list(n_cores = 1, parallel_likelihood = FALSE),
   use_warp_gradient = FALSE, homeomorphisms = "no",
   like_optim_control = list())

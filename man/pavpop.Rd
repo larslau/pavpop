@@ -98,7 +98,7 @@ for (i in 1:n) {
         lwd = 0.5, col = rainbow(n)[i])
 
 }
-lines(t_p_orig, theta, ylim = range(y), lwd = 2, lty = 2,)
+lines(t_p_orig, theta, ylim = range(y), lwd = 2, lty = 2)
 
 # Compute and display growth velocities
 plot(t_p_orig, t_p_orig, ylim = c(0, 23), type = 'n', main = 'Predicted growth velocities',
