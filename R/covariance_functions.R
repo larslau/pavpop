@@ -105,6 +105,13 @@ attr(const_cov, 'stationary') <- TRUE
 #TODO: EXAMPLE
 
 make_cov_fct <- function(cov_fct, noise = TRUE, param = NULL, inv_cov_fct = NULL, ns = NULL, ...) {
+  if (!is.null(ns)) {
+    if (is.null(ns$knots)) stop('ns must be a list with the argument knots.')
+    if (ns$knots < 2) {
+      warning('number of knots should at least be 2, ignoring argument.')
+      ns <- NULL
+    }
+  }
   if (!is.null(attr(cov_fct, 'discrete'))) {
     if (attr(cov_fct, 'discrete')) {
       if (noise) {

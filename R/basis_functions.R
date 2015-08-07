@@ -49,7 +49,7 @@ make_basis_fct <- function(kts, intercept = FALSE, increasing = FALSE, order = 3
 #' @param knots the internal breakpoints of the spline.
 #' @param d order of the spline functions.
 #' @keywords spline
-#' @note Method taken from the \code{SVMMaj} package.
+#' @note Method is a corrected version of the increasing spline basis code in the \code{SVMMaj} package.
 #' @export
 
 ispline <- function (x, knots, d) {
@@ -86,34 +86,34 @@ ispline <- function (x, knots, d) {
 # TODO: M-SPLINE FUNCTION FOR DERIVATIVES!
 
 
-ispline2 <- function(t, knots, order) {
-  if (is.null(knots) || any(is.na(knots)) || any(diff(knots) == 0) || length(knots) <= 2)
-    return(t)
-
-  m <- length(t)
-  nk <- length(knots)
-  interval <- findInterval(t, knots, all.inside = TRUE) + order
-  knots <- c(rep(knots[1], order), knots, rep(knots[nk], order))
-  nk <- length(knots)
-
-  ti_diff <- diff(knots)
-  ti_diff_inv <- ifelse(ti_diff == 0, 0, 1 / ti_diff)
-  M <- t(t(sapply(1:(nk - 1), `==`, interval)) * ti_diff_inv)
-
-  for (k in 2:(order + 1)) {
-    ti_diff <- c(diff(knots, lag = k), rep(0, k - 1))
-    ti_diff_inv <- ifelse(ti_diff == 0, 0, 1 / ti_diff)
-    i1 <- c(2:(nk - 1), nk - 1)
-    ik <- c((k + 1):(nk - 1), rep(nk, k))
-    M <- (M - M[, i1]) * t - t(t(M) * knots[-nk]) + t(t(M[, i1]) * knots[ik])
-    M <- t(t(M) * ti_diff_inv * k / (k - 1))
-  }
-  M <- t(t(M) * ti_diff / k)
-  M <- M[, -c(1, (nk - order):(nk - 1))]
-
-  S <- array(1, dim = rep(NCOL(M), 2))
-  S[upper.tri(S)] <- 0
-
-  I <- M %*% S
-  return(I)
-}
+# ispline2 <- function(t, knots, order) {
+#   if (is.null(knots) || any(is.na(knots)) || any(diff(knots) == 0) || length(knots) <= 2)
+#     return(t)
+#
+#   m <- length(t)
+#   nk <- length(knots)
+#   interval <- findInterval(t, knots, all.inside = TRUE) + order
+#   knots <- c(rep(knots[1], order), knots, rep(knots[nk], order))
+#   nk <- length(knots)
+#
+#   ti_diff <- diff(knots)
+#   ti_diff_inv <- ifelse(ti_diff == 0, 0, 1 / ti_diff)
+#   M <- t(t(sapply(1:(nk - 1), `==`, interval)) * ti_diff_inv)
+#
+#   for (k in 2:(order + 1)) {
+#     ti_diff <- c(diff(knots, lag = k), rep(0, k - 1))
+#     ti_diff_inv <- ifelse(ti_diff == 0, 0, 1 / ti_diff)
+#     i1 <- c(2:(nk - 1), nk - 1)
+#     ik <- c((k + 1):(nk - 1), rep(nk, k))
+#     M <- (M - M[, i1]) * t - t(t(M) * knots[-nk]) + t(t(M[, i1]) * knots[ik])
+#     M <- t(t(M) * ti_diff_inv * k / (k - 1))
+#   }
+#   M <- t(t(M) * ti_diff / k)
+#   M <- M[, -c(1, (nk - order):(nk - 1))]
+#
+#   S <- array(1, dim = rep(NCOL(M), 2))
+#   S[upper.tri(S)] <- 0
+#
+#   I <- M %*% S
+#   return(I)
+# }

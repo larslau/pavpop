@@ -5,9 +5,9 @@
 \title{Estimate parameters and predict warps for curve data}
 \usage{
 pavpop(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL,
-  iter = c(5, 5), parallel = list(n_cores = 1, parallel_likelihood = FALSE),
-  use_warp_gradient = FALSE, homeomorphisms = "no",
-  like_optim_control = list())
+  warped_amp = FALSE, iter = c(5, 5), parallel = list(n_cores = 1,
+  parallel_likelihood = FALSE), use_warp_gradient = FALSE,
+  homeomorphisms = "no", like_optim_control = list())
 }
 \arguments{
 \item{y}{list of \eqn{n} functional observations. Missing values are allowed.}
@@ -16,6 +16,12 @@ pavpop(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL,
 
 \item{basis_fct}{basis function to describe the mean function.}
 
+\item{amp_cov}{amplitude covariance matrix function. If `NULL`, the amplitude is assumed to only contain iid Gaussian noise.}
+
+\item{warp_cov}{warp covariance matrix function. If `NULL` the warps are treated as fixed parameters.}
+
+\item{warped_amp}{logical. Does the amplitude correlation follow observed or warped time?}
+
 \item{iter}{two-dimensional numeric consisting of number of outer and inner iterations.}
 
 \item{use_warp_gradient}{logical. Should warp prediction use the exact gradient for based optimization?}
@@ -23,16 +29,6 @@ pavpop(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL,
 \item{homeomorphisms}{should warps be constrained to be homeomorphisms? Options are: \code{'no'}, \code{'soft'} or \code{'hard'}. 'soft' will project the prediction onto the space of homeomorphisms after each prediction. 'hard' will do the optimiziation in the constrained space (not implemented yet!).}
 
 \item{like_optim_control}{list of control options for likelihood optimization. Parameters are given as \code{c(amp_cov_par, warp_cov_par)} and options include lower, upper, method, ndev (see \code{\link[stats::optim]{optim}}).}
-
-\item{amp_cov_par}{amplitude covariance parameters.}
-
-\item{amp_cov_fct}{amplitude covariance matrix function.}
-
-\item{warp_cov_par}{warp covariance parameters.}
-
-\item{warp_cov_fct}{warp covariance matrix function.}
-
-\item{tw}{anchor points for the warping parameters.}
 
 \item{smooth_warp}{logical. Should warping functions be based on a monotonic cubic spline?}
 

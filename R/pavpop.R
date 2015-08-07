@@ -16,7 +16,7 @@
 # TODO: REML
 # TODO: ALLOW SOLUTION METHODS IN COVARIANCES AND BASIS
 # TODO: METHOD BASED ON fPCA
-# TODO: SPARSE OVERCOMPLETE BASIS
+# TODO: SPARSE SOLUTION FOR OVERCOMPLETE BASIS
 
 
 #' Estimate parameters and predict warps for curve data
@@ -25,11 +25,9 @@
 #' @param y list of \eqn{n} functional observations. Missing values are allowed.
 #' @param t list of time points corresponding to y. Should be scaled to have outer endpoints at 0 and 1.
 #' @param basis_fct basis function to describe the mean function.
-#' @param amp_cov_par amplitude covariance parameters.
-#' @param amp_cov_fct amplitude covariance matrix function.
-#' @param warp_cov_par warp covariance parameters.
-#' @param warp_cov_fct warp covariance matrix function.
-#' @param tw anchor points for the warping parameters.
+#' @param amp_cov amplitude covariance matrix function. If `NULL`, the amplitude is assumed to only contain iid Gaussian noise.
+#' @param warp_cov warp covariance matrix function. If `NULL` the warps are treated as fixed parameters.
+#' @param warped_amp logical. Does the amplitude correlation follow observed or warped time?
 #' @param iter two-dimensional numeric consisting of number of outer and inner iterations.
 #' @param use_warp_gradient logical. Should warp prediction use the exact gradient for based optimization?
 #' @param smooth_warp logical. Should warping functions be based on a monotonic cubic spline?
@@ -112,7 +110,7 @@
 #' for (i in 1:n) lines(t_orig, t_range[2] * warp_fct(res$w[,i], t[[i]]), lwd = 0.2)
 #'
 
-pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, iter = c(5, 5), parallel = list(n_cores = 1, parallel_likelihood = FALSE), use_warp_gradient = FALSE, homeomorphisms = 'no', like_optim_control = list()) {
+pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, warped_amp = FALSE, iter = c(5, 5), parallel = list(n_cores = 1, parallel_likelihood = FALSE), use_warp_gradient = FALSE, homeomorphisms = 'no', like_optim_control = list()) {
   nouter <- iter[1] + 1
   if (is.null(amp_cov) & is.null(warp_cov)) nouter <- 1
   ninner <- iter[2]
@@ -144,6 +142,9 @@ pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, i
     y[[i]] <- y[[i]][!missing_indices]
     t[[i]] <- t[[i]][!missing_indices]
   }
+  # Stored warped time
+  t_warped <- t
+
   # Update m with cleaned data
   m <- sapply(y, length)
 
@@ -238,25 +239,48 @@ pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, i
 
     # Likelihood estimation of parameters (outer loop)
 
+    # Pre-compute warped time
+    for (i in 1:n) {
+      t_warped[[i]] <- warp_fct(w[, i], t[[i]])
+    }
+
+    # If the amplitude variation is assumed to be varying in warped time, the amplitude covariances are updated
+    if (warped_amp) {
+      for (i in 1:n) {
+        # Check if an amplitude covariance is defined
+        if (!is.null(amp_cov)) {
+          S[[i]] <- amp_cov(t_warped[[i]], amp_cov_par)
+          if (inv_amp) {
+            Sinv[[i]] <- inv_amp_cov(t_warped[[i]], amp_cov_par)
+          } else {
+            Sinv[[i]] <- chol2inv(chol(S[[i]]))
+          }
+        } else {
+          S[[i]] <- Sinv[[i]] <- Diagonal(m[i], x = 1)
+        }
+      }
+    }
+
     # Construct residual vector for given warp prediction
     Zis <- list()
     r <- y
     for (i in 1:n) {
-      twarped <- warp_fct(w[, i], t[[i]])
       if (!is.null(warp_cov)) {
         if (warp_type == 'smooth') dwarp[[i]] <- warp_fct(w[, i], t[[i]], w_grad = TRUE)
-        Zis[[i]] <- matrix(Zi(twarped, dwarp[[i]], basis_fct, c), m[i], mw)
+        Zis[[i]] <- matrix(Zi(t_warped[[i]], dwarp[[i]], basis_fct, c), m[i], mw)
       } else {
         Zis[[i]] <- Matrix(0, m[i], mw)
       }
-      r[[i]] <- as.numeric(r[[i]] - basis_fct(twarped) %*% c + Zis[[i]] %*% w[, i])
+      r[[i]] <- as.numeric(r[[i]] - basis_fct(t_warped[[i]]) %*% c + Zis[[i]] %*% w[, i])
     }
 
     # Check wheter the final outer loop has been reached
     if (iouter != nouter) {
+      t_like <- t
+      if (warped_amp) t_like <- t_warped
       # Likelihood function
       like_fct <- function(par) {
-        like(par, n_par = c(n_par_amp, n_par_warp), r = r, Zis = Zis, amp_cov = amp_cov, warp_cov = warp_cov, t = t, tw = tw)
+        like(par, n_par = c(n_par_amp, n_par_warp), r = r, Zis = Zis, amp_cov = amp_cov, warp_cov = warp_cov, t = t_like, tw = tw)
       }
 
       # Likelihood gradient
@@ -312,13 +336,14 @@ pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, i
         warp_cov_par_best <- warp_cov_par
 
         # Update covariances
-        S <- Sinv <- list()
         for (i in 1:n) {
+          twarped <- t[[i]]
+          if (warped_amp) twarped <- t_warped[[i]]
           # Check if an amplitude covariance is defined
           if (!is.null(amp_cov)) {
-            S[[i]] <- amp_cov(t[[i]], amp_cov_par)
+            S[[i]] <- amp_cov(twarped, amp_cov_par)
             if (inv_amp) {
-              Sinv[[i]] <- inv_amp_cov(t[[i]], amp_cov_par)
+              Sinv[[i]] <- inv_amp_cov(twarped, amp_cov_par)
             } else {
               Sinv[[i]] <- chol2inv(chol(S[[i]]))
             }
