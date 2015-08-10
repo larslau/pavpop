@@ -66,17 +66,9 @@ spline_weights <- function(y, t, warp_fct, w, Sinv, basis_fct, weights = NULL) {
   if (attr(basis_fct, 'increasing')) {
     intercept <- attr(basis_fct, 'intercept')
     indices <- 1:nb
-    rank <- rankMatrix(Dmat)[1]
-    index <- 1
+    qrDmat <- qr(Dmat)
+    indices <- qrDmat$pivot[1:qrDmat$rank]
 
-    # Perhaps this can be done smarter or better?
-    while (length(indices) > rank) {
-      tmp_indices <- indices[indices != index]
-      if (rankMatrix(Dmat[tmp_indices, tmp_indices]) == rank) {
-        indices <- tmp_indices
-      }
-      index <- index + 1
-    }
     c <- rep(0, ncol(basis))
     c[indices] <- solve.QP(Dmat = Dmat[indices, indices],
                            dvec = dvec[indices,],
