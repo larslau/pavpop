@@ -173,7 +173,10 @@ make_cov_fct <- function(cov_fct, noise = TRUE, param = NULL, inv_cov_fct = NULL
   attr(f, 'inv_cov_fct') <- inv_cov_fct
   # Set the scale parameter
   attr(f, 'scale') <- ifelse(is.null(formals(cov_fct)$param$scale), NA, which(names(formals(cov_fct)$param) == 'scale') - 1)
-  attr(f, 'cov_fct') <- cov_fct
+  # Include covariance function evaluated with additional arguments
+  eval_cov_fct <- function(t, param) cov_fct(t, param, ...)
+  attributes(eval_cov_fct) <- attributes(cov_fct)
+  attr(f, 'cov_fct') <- eval_cov_fct
   attr(f, 'noise') <- noise
   # If the covariance has been made non-stationary, modify
   if (!is.null(ns)) {
