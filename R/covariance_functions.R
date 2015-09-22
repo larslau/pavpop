@@ -155,11 +155,12 @@ make_cov_fct <- function(cov_fct, noise = TRUE, param = NULL, inv_cov_fct = NULL
     } else {
       # Non-stationary covariance, fill in all entries separately
       f <- function (t, param) {
+        ns <- spline(seq(0, 1, length = knots), c(param[1:(knots - 1)], 1), xout = t)$y
         m <- length(t)
         S <- matrix(NA, m, m)
         for (i in 1:m) {
           for (j in i:m) {
-            S[i, j] <- S[j, i] <- cov_fct(c(t[i], t[j]), param, ...)
+            S[i, j] <- S[j, i] <- ns[i]*ns[j]*cov_fct(c(t[i], t[j]), param[-(1:(knots - 1))], ...)
           }
         }
         if (noise) diag(S) <- diag(S) + 1
