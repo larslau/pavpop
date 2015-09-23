@@ -154,68 +154,82 @@ make_cov_fct <- function(cov_fct, noise = TRUE, param = NULL, inv_cov_fct = NULL
       }
     } else {
       # Non-stationary covariance, fill in all entries separately
-      f <- function (t, param) {
-        ns <- spline(seq(0, 1, length = knots), c(param[1:(knots - 1)], 1), xout = t)$y
-        m <- length(t)
-        S <- matrix(NA, m, m)
-        for (i in 1:m) {
-          for (j in i:m) {
-            S[i, j] <- S[j, i] <- ns[i]*ns[j]*cov_fct(c(t[i], t[j]), param[-(1:(knots - 1))], ...)
+      if (is.null(ns)) {
+        f <- function (t, param) {
+          m <- length(t)
+          S <- matrix(NA, m, m)
+          for (i in 1:m) {
+            for (j in i:m) {
+              S[i, j] <- S[j, i] <- cov_fct(c(t[i], t[j]), param, ...)
+            }
           }
+          if (noise) diag(S) <- diag(S) + 1
+          return(S)
         }
-        if (noise) diag(S) <- diag(S) + 1
-        return(S)
+      } else {
+        knots <- ns$knots
+        f <- function (t, param) {
+          ns <- spline(seq(0, 1, length = knots), c(param[1:(knots - 1)], 1), xout = t)$y
+          m <- length(t)
+          S <- matrix(NA, m, m)
+          for (i in 1:m) {
+            for (j in i:m) {
+              S[i, j] <- S[j, i] <- ns[i] * ns[j] * cov_fct(c(t[i], t[j]), param[-(1:(knots - 1))], ...)
+            }
+          }
+          if (noise) diag(S) <- diag(S) + 1
+          return(S)
+        }
       }
     }
-  }
-  if (is.null(param)) param <- formals(cov_fct)$param
-  attr(f, 'param') <- param
-  # Set solve method
-  attr(f, 'inv_cov_fct') <- inv_cov_fct
-  # Set the scale parameter
-  attr(f, 'scale') <- ifelse(is.null(formals(cov_fct)$param$scale), NA, which(names(formals(cov_fct)$param) == 'scale') - 1)
-  # Include covariance function evaluated with additional arguments
-  eval_cov_fct <- function(t, param) cov_fct(t, param, ...)
-  attributes(eval_cov_fct) <- attributes(cov_fct)
-  attr(f, 'cov_fct') <- eval_cov_fct
-  attr(f, 'noise') <- noise
-  # If the covariance has been made non-stationary, modify
-  if (!is.null(ns)) {
-    attr(f, 'param') <- c(local_scale = rep(1, ns$knots - 1), param)
-    ns_cov_fct <- function(t, param) {
-      prod(spline(seq(0, 1, length = ns$knots), c(param[1:(ns$knots - 1)],1), xout = t)$y) * cov_fct(abs(diff(t)), param[-(1:(ns$knots - 1))])
+    if (is.null(param)) param <- formals(cov_fct)$param
+    attr(f, 'param') <- param
+    # Set solve method
+    attr(f, 'inv_cov_fct') <- inv_cov_fct
+    # Set the scale parameter
+    attr(f, 'scale') <- ifelse(is.null(formals(cov_fct)$param$scale), NA, which(names(formals(cov_fct)$param) == 'scale') - 1)
+    # Include covariance function evaluated with additional arguments
+    eval_cov_fct <- function(t, param) cov_fct(t, param, ...)
+    attributes(eval_cov_fct) <- attributes(cov_fct)
+    attr(f, 'cov_fct') <- eval_cov_fct
+    attr(f, 'noise') <- noise
+    # If the covariance has been made non-stationary, modify
+    if (!is.null(ns)) {
+      attr(f, 'param') <- c(local_scale = rep(1, ns$knots - 1), param)
+      ns_cov_fct <- function(t, param) {
+        prod(spline(seq(0, 1, length = ns$knots), c(param[1:(ns$knots - 1)], 1), xout = t)$y) * cov_fct(abs(diff(t)), param[-(1:(ns$knots - 1))])
+      }
+      attr(ns_cov_fct, 'stationary') <- FALSE
+      attr(f, 'cov_fct') <- ns_cov_fct
     }
-    attr(ns_cov_fct, 'stationary') <- FALSE
-    attr(f, 'cov_fct') <- ns_cov_fct
+    return(f)
   }
-  return(f)
-}
 
-#' Rectangular evaluation of covariance functions
-#'
-#' Generate rectangular evaluations of covariance functions that are typically used for prediction purposes.
-#' @param t observation points.
-#' @param t_p new "prediction" points.
-#' @param cov_fct covariance function.
-#' @param ... arguments passed to cov_fct.
-#'
-cov_rect <- function(t, t_p, cov_fct, param, ...) {
-  m_p <- length(t_p)
-  m <- length(t)
-  S <- matrix(NA, m_p, m)
+  #' Rectangular evaluation of covariance functions
+  #'
+  #' Generate rectangular evaluations of covariance functions that are typically used for prediction purposes.
+  #' @param t observation points.
+  #' @param t_p new "prediction" points.
+  #' @param cov_fct covariance function.
+  #' @param ... arguments passed to cov_fct.
+  #'
+  cov_rect <- function(t, t_p, cov_fct, param, ...) {
+    m_p <- length(t_p)
+    m <- length(t)
+    S <- matrix(NA, m_p, m)
 
-  if (attr(cov_fct, 'stationary')) {
-    # stationary covariance, fill rows and columns simultaneously
-    for (i in 1:m) {
-      S[, i] <- cov_fct(abs(t[i] - t_p), param, ...)
-    }
-  } else {
-    # Non-stationary covariance, fill in all entries separately
-    for (i in 1:m_p) {
-      for (j in 1:m) {
-        S[i, j] <- cov_fct(c(t_p[i], t[j]), param, ...)
+    if (attr(cov_fct, 'stationary')) {
+      # stationary covariance, fill rows and columns simultaneously
+      for (i in 1:m) {
+        S[, i] <- cov_fct(abs(t[i] - t_p), param, ...)
+      }
+    } else {
+      # Non-stationary covariance, fill in all entries separately
+      for (i in 1:m_p) {
+        for (j in 1:m) {
+          S[i, j] <- cov_fct(c(t_p[i], t[j]), param, ...)
+        }
       }
     }
+    return(S)
   }
-  return(S)
-}
