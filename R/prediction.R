@@ -46,8 +46,14 @@ predict_curve_verbose <- function(t_p, t, y, c, basis_fct, warp_fct, amp_cov, am
   r <- y - basis_fct(warp_fct(w, t)) %*% c
   theta_pers   <- basis %*% c
   pred         <- theta_pers + S_p %*% Ainv %*% r
-  post <- posterior(w = w, t = t, y = y, c = c, Cinv = Cinv, basis_fct = basis_fct, warp_fct = warp_fct, Sinv = Ainv)
-
+  if (is.null(warp_cov_par)) {
+    post <- NULL
+  } else {
+    tw <- attr(warp_fct, 'tw')
+    mw <- attr(warp_fct, 'mw')
+    Cinv <- solve(warp_cov(tw, warp_cov_par))
+    post <- posterior(w = w, t = t, y = y, c = c, Cinv = Cinv, basis_fct = basis_fct, warp_fct = warp_fct, Sinv = Ainv)
+  }
   return(list(pred = pred, w = w, r = r, post = post))
 }
 
