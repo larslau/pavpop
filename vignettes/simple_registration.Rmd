@@ -14,7 +14,7 @@ library(pavpop)
 ```
 In this vignette we will consider some simple examples of data that needs registration.
 
-## Example 1: linear shift
+## Example 1: Shifted curves
 
 First, we generate a dataset with randomly shifted curves with noise
 ```{r}
@@ -49,7 +49,7 @@ We now set up the pavpop model to estimate in the model
 
 ```{r}
 # Set up basis function
-kts <- seq(-0.2, 1.2, length = 15)
+kts <- seq(-0.2, 1.2, length = 15)[2:14]
 basis_fct <- make_basis_fct(kts = kts, intercept = TRUE, order = 3, boundary = c(-0.2, 1.2))
 
 # Set up warp function
@@ -59,21 +59,22 @@ warp_fct <- make_warp_fct(type = 'shift')
 res <- pavpop(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, iter = c(1, 5))
 ```
 
-We can not plot the results
+We can not plot the results using a coloring similar to before.
 
 ```{r}
 plot(w, res$w, xlab = 'true shifts', ylab = 'estimated shifts', pch = 19)
 abline(0, 1, lty = 2)
 
 t_plot <- seq(-0.2, 1.2, length = 100)
-plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', xlab = 't', ylab = expression(theta(t)))
+plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', 
+     xlab = 'warped t', ylab = expression(theta(t)))
 for (i in 1:n) lines(t[[i]] + res$w[i], y[[i]], col = rainbow(n)[i])
 lines(t_plot, basis_fct(t_plot) %*% res$c, lwd = 2, lty = 2, col = 'red')
 lines(t_plot, theta(t_plot), lwd = 2, lty = 2)
 ```
 
 
-## Example 2: linear shift with normally distributed shifts
+## Example 2: Normally distributed shifts
 We use the same data as before, but now we generate random shifts from a normal distribution
 ```{r}
 # Generate shifts
@@ -84,7 +85,8 @@ w <- rnorm(n, sd = sigma * sqrt(scale))
 y <- lapply(1:n, function(i) {theta(t[[i]] + w[i]) + rnorm(m, sd = sigma)}) 
 
 # Plot shifted curves
-plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', xlab = 't', ylab = expression(theta(t)))
+plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', 
+     xlab = 't', ylab = expression(theta(t)))
 for (i in 1:n) lines(t[[i]], y[[i]], col = rainbow(n)[i])
 lines(t[[1]], theta(t[[1]]), lwd = 2, lty = 2)
 ```
@@ -92,26 +94,29 @@ lines(t[[1]], theta(t[[1]]), lwd = 2, lty = 2)
 Let us first ignore the uncertainty and use the same model as in Example 1.
 
 ```{r}
-res_no_uncert <- pavpop(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, iter = c(1, 5))
+res_no_uncert <- pavpop(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, 
+                        iter = c(1, 5))
 ```
 
 Correct specification of the model where the shifts are a normal random effect can be done as follows
 
 ```{r}
-warp_cov <- make_cov_fct(id_cov)
+warp_cov <- make_cov_fct(id_cov, noise = FALSE)
 res <- pavpop(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = warp_cov, iter = c(5, 5))
 ```
 
 
-We can not plot the results
+We can not plot the results, where the predicted shifts are green and the estimated shifts from the model with warps as fixed effects are red. 
 
 ```{r}
-plot(w, res$w, xlab = 'true shifts', ylab = 'estimated shifts', pch = 19, col = 'green')
+plot(w, res$w, xlab = 'true shifts', ylab = 'estimated/predicted shifts', 
+     pch = 19, col = 'green')
 points(w, res_no_uncert$w, pch = 19, col = 'red', cex = 0.5)
 abline(0, 1, lty = 2)
 
 t_plot <- seq(-0.2, 1.2, length = 100)
-plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', xlab = 't', ylab = expression(theta(t)))
+plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', 
+     xlab = 'warped t', ylab = expression(theta(t)))
 for (i in 1:n) lines(t[[i]] + res$w[i], y[[i]], col = rainbow(n)[i])
 lines(t_plot, basis_fct(t_plot) %*% res$c, lwd = 2, lty = 2, col = 'red')
 lines(t_plot, theta(t_plot), lwd = 2, lty = 2)
@@ -132,7 +137,7 @@ sd(res$w)
 ```
 
 
-## Example 3: serial correlation and normally distributed shifts
+## Example 3: Serial correlation and normally distributed shifts
 We use the same data as in Example 2, but instad of iid normally distributed noise we now add a Matérn process to the observations. 
 ```{r}
 # Generate shifts
@@ -143,10 +148,14 @@ amp_cov <- make_cov_fct(Matern, noise = FALSE)
 
 
 # Generate data with random shifts
-y <- lapply(1:n, function(i) {theta(t[[i]] + w[i]) + sigma * t(chol(amp_cov(t[[i]], c(100, 0.3, 2)))) %*% rnorm(m)}) 
+gen_dat <- function(i) {
+  theta(t[[i]] + w[i]) + sigma * t(chol(amp_cov(t[[i]], c(100, 0.3, 2)))) %*% rnorm(m)
+}
+y <- lapply(1:n, gen_dat) 
 
 # Plot shifted curves
-plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', xlab = 't', ylab = expression(theta(t)))
+plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', 
+     xlab = 't', ylab = expression(theta(t)))
 for (i in 1:n) lines(t[[i]], y[[i]], col = rainbow(n)[i])
 lines(t[[1]], theta(t[[1]]), lwd = 2, lty = 2)
 ```
@@ -154,30 +163,35 @@ lines(t[[1]], theta(t[[1]]), lwd = 2, lty = 2)
 Let us first ignore the uncertainty and use the same model as in Example 1.
 
 ```{r}
-res_no_uncert <- pavpop(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, iter = c(1, 5))
+res_no_uncert <- pavpop(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, 
+                        iter = c(1, 5))
 ```
 
 And now compare to the correct specification of the model
 
 ```{r}
-res <- pavpop(y, t, basis_fct, warp_fct, amp_cov = amp_cov, warp_cov = warp_cov, iter = c(5, 5))
+res <- pavpop(y, t, basis_fct, warp_fct, amp_cov = amp_cov, warp_cov = warp_cov, 
+              iter = c(5, 5))
 ```
 
 
 We can not plot the results
 
 ```{r}
-plot(w, res$w, xlab = 'true shifts', ylab = 'estimated shifts', pch = 19, col = 'green')
+plot(w, res$w, xlab = 'true shifts', ylab = 'estimated/predicted shifts', 
+     pch = 19, col = 'green', ylim = range(res$w, res_no_uncert$w))
 points(w, res_no_uncert$w, pch = 19, col = 'red', cex = 0.5)
 abline(0, 1, lty = 2)
 
 par(mfrow = c(1, 2))
-plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', xlab = 't', ylab = expression(theta(t)))
+plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', 
+     xlab = 'warped t', ylab = expression(theta(t)), main = 'No random effects')
 for (i in 1:n) lines(t[[i]] + res_no_uncert$w[i], y[[i]], col = rainbow(n)[i])
 lines(t_plot, basis_fct(t_plot) %*% res_no_uncert$c, lwd = 2, lty = 2, col = 'blue')
 lines(t_plot, theta(t_plot), lwd = 2, lty = 2)
 
-plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', xlab = 't', ylab = expression(theta(t)))
+plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', 
+     xlab = 'warped t', ylab = expression(theta(t)), main = 'pavpop')
 for (i in 1:n) lines(t[[i]] + res$w[i], y[[i]], col = rainbow(n)[i])
 lines(t_plot, basis_fct(t_plot) %*% res$c, lwd = 2, lty = 2, col = 'blue')
 lines(t_plot, theta(t_plot), lwd = 2, lty = 2)

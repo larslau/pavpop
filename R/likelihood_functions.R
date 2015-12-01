@@ -18,6 +18,7 @@
 #' @importFrom Matrix t
 
 like <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw) {
+  # TODO: WARPED TIME!!!
   amp_cov_par <- param[1:n_par[1]]
   warp_cov_par <- param[(n_par[1] + 1):length(param)]
   if (!is.null(warp_cov)) {
@@ -61,6 +62,95 @@ like <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw) {
   return(res)
 }
 
+
+
+like_amp <- function(param, n_par, r, Zis, amp_cov, warp_cov, amp_fct, warped_amp, t, tw) {
+  amp_cov_par <- param[1:n_par[1]]
+  warp_cov_par <- param[(n_par[1] + 1):length(param)]
+  df <- attr(amp_fct, 'df')
+  if (!is.null(warp_cov)) {
+    Cinv <- chol2inv(chol(warp_cov(tw, warp_cov_par)))
+  } else {
+    Cinv <- matrix(0, length(tw), length(tw))
+  }
+  if (!is.null(amp_cov)) {
+    Sinv <- chol2inv(chol(amp_cov(1:df, amp_cov_par)))
+  }
+
+  n <- length(r)
+  m <- sapply(r, length)
+
+  sq <- logdet <- 0
+  for (i in 1:n) {
+    A <- amp_fct(t[[i]])
+    ZZ <- Zis[[i]]
+    logdet_tmp <- 0
+
+    if (!is.null(amp_cov)) {
+      SLR <- diag(m[i]) - A %*% chol2inv(chol(Sinv + t(A) %*% A)) %*% t(A)
+    } else {
+      SLR <- diag(m[i], x = 1)
+    }
+
+    if (!is.null(warp_cov)) {
+      LR <- chol2inv(chol(as.matrix(Cinv + t(ZZ) %*% SLR %*% ZZ)))
+      logdet_tmp <- -determinant(LR)$modulus[1]
+    } else {
+      LR <- Matrix(data = 0, nrow = nrow(Cinv), ncol = nrow(Cinv))
+    }
+
+    rr <- SLR %*% r[[i]]
+    rz <- as.numeric(t(ZZ) %*% rr)
+    sq <- sq + t(r[[i]]) %*% rr - t(rz) %*% LR %*% rz
+
+    logdet <- logdet - logdet_tmp - determinant(SLR)$modulus[1]
+  }
+  if (!is.null(warp_cov)) logdet <- logdet - n * determinant(Cinv)$modulus[1]
+  sigmahat <- as.numeric(sq / sum(m))
+  res <- sum(m) * log(sigmahat) + logdet
+  return(res)
+}
+
+sigmasq_amp <- function(param, n_par, r, Zis, amp_cov, warp_cov, amp_fct, warped_amp, t, tw) {
+  amp_cov_par <- param[1:n_par[1]]
+  warp_cov_par <- param[(n_par[1] + 1):length(param)]
+  df <- attr(amp_fct, 'df')
+  if (!is.null(warp_cov)) {
+    Cinv <- chol2inv(chol(warp_cov(tw, warp_cov_par)))
+  } else {
+    Cinv <- matrix(0, length(tw), length(tw))
+  }
+  if (!is.null(amp_cov)) {
+    Sinv <- chol2inv(chol(amp_cov(1:df, amp_cov_par)))
+  }
+
+  n <- length(r)
+  m <- sapply(r, length)
+
+  sq <- logdet <- 0
+  for (i in 1:n) {
+    A <- amp_fct(t[[i]])
+    ZZ <- Zis[[i]]
+
+    if (!is.null(amp_cov)) {
+      SLR <- diag(m[i]) - A %*% chol2inv(chol(Sinv + t(A) %*% A)) %*% t(A)
+    } else {
+      SLR <- diag(m[i], x = 1)
+    }
+
+    if (!is.null(warp_cov)) {
+      LR <- chol2inv(chol(as.matrix(Cinv + t(ZZ) %*% SLR %*% ZZ)))
+    } else {
+      LR <- Matrix(data = 0, nrow = nrow(Cinv), ncol = nrow(Cinv))
+    }
+
+    rr <- SLR %*% r[[i]]
+    rz <- as.numeric(t(ZZ) %*% rr)
+    sq <- sq + t(r[[i]]) %*% rr - t(rz) %*% LR %*% rz
+  }
+  sigmahat <- as.numeric(sq / sum(m))
+  return(sigmahat)
+}
 
 #' Locally linearized likelihood function cluster
 #'

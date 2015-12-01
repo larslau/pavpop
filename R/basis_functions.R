@@ -11,7 +11,19 @@
 
 
 #TODO: EXPLICIT DERIVATIVES!!
-make_basis_fct <- function(kts, intercept = FALSE, increasing = FALSE, order = 3, boundary = c(0, 1)) {
+make_basis_fct <- function(kts, intercept = FALSE, increasing = FALSE, only_intercept = FALSE, order = 3, boundary = c(0, 1)) {
+  if (only_intercept) {
+    b <- function(t, deriv = FALSE) {
+      t[] <- ifelse(deriv, 0, 1)
+      dim(t) <- c(length(t), 1)
+      return(t)
+    }
+    attr(b, 'df') <- 1
+    attr(b, 'intercept') <- TRUE
+    attr(b, 'increasing') <- FALSE
+
+    return(b)
+  }
   epsilon <- 1e-5
   if (increasing) { # I-spline
     b <- function(t, deriv = FALSE) {

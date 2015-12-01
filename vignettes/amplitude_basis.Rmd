@@ -1,0 +1,110 @@
+---
+title: "pavpop models with amplitude variation modeled by a functional basis"
+author: "Lars Lau Raket"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Functional basis for amplitude variation}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+```{r, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(warning = FALSE, comment = "#>", fig.height = 5, fig.width = 7)
+library(pavpop)
+```
+
+## Example 1
+
+```{r}
+# Number of samples
+n <- 10 
+# Number of observation points
+m <- 100 
+
+# Observation points
+t <- seq(0, 1, length = m + 2)[2:(m + 1)] 
+
+# Common basis function (both mean and amplitude variation)
+kts <- seq(0, 1, length = 12)[2:11]
+basis_fct <- amp_fct <- make_basis_fct(kts = kts, intercept = TRUE)
+df <- attr(basis_fct, 'df')
+
+# Generate true mean weights 
+beta_t <- rexp(df)
+
+# Generate random variation weights
+b_t <- replicate(n, rnorm(df, sd = 0.1))
+
+# Generate warping function and random parameters
+tw <- seq(0, 1, length = 4)[2:3]
+warp_fct <- make_warp_fct(type = 'smooth', tw = tw)
+w_t <- replicate(n, rnorm(2, sd = 0.1))
+
+# Generate data
+sigma <- 0.01
+y <- lapply(1:n, function(i) {as.numeric(basis_fct(warp_fct(w_t[, i], t)) %*% beta_t 
+                                         + amp_fct(t) %*% b_t[, i] 
+                                         + rnorm(m, sd = sigma))}) 
+t <- lapply(1:n, function(x) t)
+
+# Plot observations
+plot(0, 0, xlim = c(0, 1), ylim = range(y), type = 'n', 
+     xlab = 't', ylab = 'y(t)')
+legend(0.7, range(y)[2], legend = expression(theta(t)), lty = 2, lwd = 2)
+for (i in 1:n) lines(t[[i]], y[[i]], col = rainbow(n)[i])
+lines(t[[1]], basis_fct(t[[1]]) %*% beta_t , lwd = 2, lty = 2)
+```
+
+Now we set up pavpop to estimate in the model
+```{r}
+amp_cov <- make_cov_fct(id_cov, noise = FALSE)
+warp_cov <- make_cov_fct(id_cov, noise = FALSE)
+
+res <- pavpop_amp(y, t, basis_fct, amp_fct, warp_fct, amp_cov, warp_cov, iter = c(10, 10))
+
+# Plot aligned samples
+plot(0, 0, xlim = c(0, 1), ylim = range(y), type = 'n', 
+     xlab = 't', ylab = 'y(t)')
+legend(0.7, range(y)[2], legend = c(expression(theta(t)), expression(hat(theta)(t))), 
+       lty = 2, lwd = 2, col = c('black', 'red'))
+for (i in 1:n) lines(warp_fct(res$w[, i], t[[i]]), y[[i]], col = rainbow(n)[i])
+lines(t[[1]], basis_fct(t[[1]]) %*% beta_t , lwd = 2, lty = 2)
+lines(t[[1]], basis_fct(t[[1]]) %*% res$c, lwd = 2, lty = 2, col = 'red')
+
+plot(as.numeric(w_t), as.numeric(res$w), xlab = 'true warp variables', ylab = 'estimated warp variables', pch = 19, col = c('green', 'blue'))
+abline(0, 1, lty = 2)
+```
+
+
+
+## Example 2: more amplitude variation
+
+```{r}
+# Generate new random variation weights
+b_t <- replicate(n, rnorm(df, sd = 0.5))
+
+# Generate data
+y <- lapply(1:n, function(i) {as.numeric(basis_fct(warp_fct(w_t[, i], t[[i]])) %*% beta_t 
+                                         + amp_fct(t[[i]]) %*% b_t[, i] 
+                                         + rnorm(m, sd = sigma))}) 
+# Plot observations
+plot(0, 0, xlim = c(0, 1), ylim = range(y), type = 'n', 
+     xlab = 't', ylab = 'y(t)')
+legend(0.7, range(y)[2], legend = expression(theta(t)), lty = 2, lwd = 2)
+for (i in 1:n) lines(t[[i]], y[[i]], col = rainbow(n)[i])
+lines(t[[1]], basis_fct(t[[1]]) %*% beta_t , lwd = 2, lty = 2)
+
+res <- pavpop_amp(y, t, basis_fct, amp_fct, warp_fct, amp_cov, warp_cov, iter = c(10, 10))
+
+# Plot aligned samples
+plot(0, 0, xlim = c(0, 1), ylim = range(y), type = 'n', 
+     xlab = 't', ylab = 'y(t)')
+legend(0.7, range(y)[2], legend = c(expression(theta(t)), expression(hat(theta)(t))), 
+       lty = 2, lwd = 2, col = c('black', 'red'))
+for (i in 1:n) lines(warp_fct(res$w[, i], t[[i]]), y[[i]], col = rainbow(n)[i])
+lines(t[[1]], basis_fct(t[[1]]) %*% beta_t , lwd = 2, lty = 2)
+lines(t[[1]], basis_fct(t[[1]]) %*% res$c, lwd = 2, lty = 2, col = 'red')
+
+plot(as.numeric(w_t), as.numeric(res$w), xlab = 'true warp variables', ylab = 'estimated warp variables', pch = 19, col = c('green', 'blue'))
+abline(0, 1, lty = 2)
+```

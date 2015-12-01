@@ -6,6 +6,8 @@
 #' @keywords warping
 #' @export
 
+
+#TODO: Initialize is not used anymore?
 make_warp_fct <- function(type = c('shift', 'linear', 'piecewise-linear', 'smooth'), tw = NULL) {
   # Match type argument
   types <- c('shift', 'linear', 'piecewise-linear', 'smooth')
@@ -25,14 +27,14 @@ make_warp_fct <- function(type = c('shift', 'linear', 'piecewise-linear', 'smoot
   } else if (type == 'linear') {
     v <- function(w, t, w_grad = FALSE) {
       if (!w_grad) {
-        return(w[1] + w[2] * t)
+        return(w[1] + (w[2] + 1) * t)
       } else {
         dv <- matrix(1, length(t), 2)
         dv[, 2] <- t
         return(dv)
       }
     }
-    attr(v, 'initialize') <- c(0, 1)
+    attr(v, 'initialize') <- c(0, 0)
     attr(v, 'mw') <- 2
   } else if (type == 'piecewise-linear') {
     if (any(is.na(tw))) stop('all anchor points tw should be supplied for type \'piecewise-linear\'')
