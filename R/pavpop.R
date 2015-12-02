@@ -373,7 +373,7 @@ pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, w
         cat(':\t', param, '\n')
         cat('Linearized likelihood:\t', like_best, '\n')
       } else {
-        cat(':\tLikelihood not improved, returning best likelihood estimates.\n')
+        cat('.\nLikelihood not improved, returning best likelihood estimates.\n')
         halt_iteration <- TRUE
       }
     } else {

@@ -96,8 +96,8 @@ If required, manually construct covariance function with noise term.')
     # Check if an amplitude covariance is defined
     if (!is.null(amp_cov)) {
       A <- amp_fct(t[[i]])
-      S[[i]] <- A %*% SS %*% t(A) + Diagonal(m[i], x = 1)
-      Sinv[[i]] <- Diagonal(m[i], x = 1) - A %*% solve(SSinv + t(A) %*% A, t(A))
+      S[[i]] <- A %*% SS %*% t(A) + diag(1, m[i])
+      Sinv[[i]] <- diag(1, m[i]) - A %*% solve(SSinv + t(A) %*% A, t(A))
     } else {
       S[[i]] <- Sinv[[i]] <- Diagonal(m[i], x = 1)
     }
@@ -178,18 +178,12 @@ If required, manually construct covariance function with noise term.')
 
     # If the amplitude variation is assumed to be varying in warped time, the amplitude covariances are updated
     if (warped_amp) {
-      for (i in 1:n) {
-        # Check if an amplitude covariance is defined
-        if (!is.null(amp_cov)) {
-          S[[i]] <- amp_cov(t_warped[[i]], amp_cov_par)
-          if (inv_amp) {
-            Sinv[[i]] <- inv_amp_cov(t_warped[[i]], amp_cov_par)
-          } else {
-            Sinv[[i]] <- chol2inv(chol(S[[i]]))
-          }
-        } else {
-          S[[i]] <- Sinv[[i]] <- Diagonal(m[i], x = 1)
-        }
+      if (!is.null(amp_cov)) {
+        A <- amp_fct(t[[i]])
+        S[[i]] <- A %*% SS %*% t(A) + diag(1, m[i])
+        Sinv[[i]] <- diag(1, m[i]) - A %*% solve(SSinv + t(A) %*% A, t(A))
+      } else {
+        S[[i]] <- Sinv[[i]] <- Diagonal(m[i], x = 1)
       }
     }
 
@@ -278,13 +272,9 @@ If required, manually construct covariance function with noise term.')
           if (warped_amp) twarped <- t_warped[[i]]
           # Check if an amplitude covariance is defined
           if (!is.null(amp_cov)) {
-            A <- amp_fct(twarped)
-            S[[i]] <- A %*% SS %*% t(A) + Diagonal(m[i], x = 1)
-            if (inv_amp) {
-              Sinv[[i]] <- inv_amp_cov(twarped, amp_cov_par)
-            } else {
-              Sinv[[i]] <- Diagonal(m[i], x = 1) - A %*% solve(SSinv + t(A) %*% A, t(A))
-            }
+            A <- amp_fct(t[[i]])
+            S[[i]] <- A %*% SS %*% t(A) + diag(1, m[i])
+            Sinv[[i]] <- diag(1, m[i]) - A %*% solve(SSinv + t(A) %*% A, t(A))
           } else {
             S[[i]] <- Sinv[[i]] <- Diagonal(m[i], x = 1)
           }
@@ -299,7 +289,7 @@ If required, manually construct covariance function with noise term.')
         cat(':\t', param, '\n')
         cat('Linearized likelihood:\t', like_best, '\n')
       } else {
-        cat(':\tLikelihood not improved, returning best likelihood estimates.\n')
+        cat('.\nLikelihood not improved, returning best likelihood estimates.\n')
         halt_iteration <- TRUE
       }
     } else {

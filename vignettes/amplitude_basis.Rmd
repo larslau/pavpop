@@ -57,6 +57,7 @@ lines(t[[1]], basis_fct(t[[1]]) %*% beta_t , lwd = 2, lty = 2)
 
 Now we set up pavpop to estimate in the model
 ```{r}
+
 amp_cov <- make_cov_fct(id_cov, noise = FALSE)
 warp_cov <- make_cov_fct(id_cov, noise = FALSE)
 
@@ -64,14 +65,15 @@ res <- pavpop_amp(y, t, basis_fct, amp_fct, warp_fct, amp_cov, warp_cov, iter = 
 
 # Plot aligned samples
 plot(0, 0, xlim = c(0, 1), ylim = range(y), type = 'n', 
-     xlab = 't', ylab = 'y(t)')
+     xlab = 'warped t', ylab = 'y(t)')
 legend(0.7, range(y)[2], legend = c(expression(theta(t)), expression(hat(theta)(t))), 
        lty = 2, lwd = 2, col = c('black', 'red'))
 for (i in 1:n) lines(warp_fct(res$w[, i], t[[i]]), y[[i]], col = rainbow(n)[i])
 lines(t[[1]], basis_fct(t[[1]]) %*% beta_t , lwd = 2, lty = 2)
 lines(t[[1]], basis_fct(t[[1]]) %*% res$c, lwd = 2, lty = 2, col = 'red')
 
-plot(as.numeric(w_t), as.numeric(res$w), xlab = 'true warp variables', ylab = 'estimated warp variables', pch = 19, col = c('green', 'blue'))
+plot(as.numeric(w_t), as.numeric(res$w), xlab = 'true warp variables', 
+     ylab = 'predicted warp variables', pch = 19, col = c('green', 'blue'))
 abline(0, 1, lty = 2)
 ```
 
@@ -98,13 +100,14 @@ res <- pavpop_amp(y, t, basis_fct, amp_fct, warp_fct, amp_cov, warp_cov, iter = 
 
 # Plot aligned samples
 plot(0, 0, xlim = c(0, 1), ylim = range(y), type = 'n', 
-     xlab = 't', ylab = 'y(t)')
+     xlab = 'warped t', ylab = 'y(t)')
 legend(0.7, range(y)[2], legend = c(expression(theta(t)), expression(hat(theta)(t))), 
        lty = 2, lwd = 2, col = c('black', 'red'))
 for (i in 1:n) lines(warp_fct(res$w[, i], t[[i]]), y[[i]], col = rainbow(n)[i])
 lines(t[[1]], basis_fct(t[[1]]) %*% beta_t , lwd = 2, lty = 2)
 lines(t[[1]], basis_fct(t[[1]]) %*% res$c, lwd = 2, lty = 2, col = 'red')
 
-plot(as.numeric(w_t), as.numeric(res$w), xlab = 'true warp variables', ylab = 'estimated warp variables', pch = 19, col = c('green', 'blue'))
+plot(as.numeric(w_t), as.numeric(res$w), xlab = 'true warp variables', 
+     ylab = 'estimated warp variables', pch = 19, col = c('green', 'blue'))
 abline(0, 1, lty = 2)
 ```
