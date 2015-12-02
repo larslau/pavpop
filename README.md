@@ -9,11 +9,11 @@ So, what does it do?
 
 If you have a set of curves that all represent the same underlying object, but are not aligned, pavpop may be able to help. But it can go further than other curve regirstation methods, since it can also register curves that contain systematic differences in shape (i.e. basically any data set of functional data). Consider for example the 12 repetitions of acceleration signals arising from a from a pen writing.
 
--\><img src="http://i.imgur.com/ZByTWIp.png" width="480">\<-
+<img src="http://i.imgur.com/ZByTWIp.png" width="480">
 
 Using pavpop on the data will align them nicely, the result is shown in the following figure.
 
--\><img src="http://i.imgur.com/OkhZCmL.png" width="480">\<-
+<img src="http://i.imgur.com/OkhZCmL.png" width="480">
 
 But other methods can produce give similar results?
 ---------------------------------------------------
