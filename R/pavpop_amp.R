@@ -178,6 +178,7 @@ If required, manually construct covariance function with noise term.')
 
     # If the amplitude variation is assumed to be varying in warped time, the amplitude covariances are updated
     if (warped_amp) {
+      warning('Not currently implemented!')
       if (!is.null(amp_cov)) {
         A <- amp_fct(t[[i]])
         S[[i]] <- A %*% SS %*% t(A) + diag(1, m[i])

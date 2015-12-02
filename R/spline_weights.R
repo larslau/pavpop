@@ -64,8 +64,6 @@ spline_weights <- function(y, t, warp_fct, w, Sinv, basis_fct, weights = NULL) {
   }
 
   if (attr(basis_fct, 'increasing')) {
-    intercept <- attr(basis_fct, 'intercept')
-    indices <- 1:nb
     qrDmat <- qr(Dmat)
     indices <- qrDmat$pivot[1:qrDmat$rank]
 
@@ -74,6 +72,7 @@ spline_weights <- function(y, t, warp_fct, w, Sinv, basis_fct, weights = NULL) {
                            dvec = dvec[indices,],
                            Amat = diag(nrow = length(indices)))$solution
   } else {
+    # Faster to use qr?
     c <- as.numeric(MASS::ginv(as.matrix(Dmat)) %*% dvec)
   }
 

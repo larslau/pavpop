@@ -8,7 +8,7 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
-```{r, echo = FALSE, message = FALSE}
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(warning = FALSE, comment = "#>", fig.height = 5, fig.width = 7)
 library(pavpop)
 ```
@@ -41,7 +41,7 @@ warp_fct <- make_warp_fct(type = 'linear')
 w_t <- replicate(n, rnorm(2, sd = c(0.1, 0.05)))
 
 # Generate data
-sigma <- 0.01
+sigma <- 0.1
 y <- lapply(1:n, function(i) {as.numeric(basis_fct(warp_fct(w_t[, i], t)) %*% beta_t 
                                          + amp_fct(t) %*% b_t[i] 
                                          + rnorm(m, sd = sigma))}) 
@@ -60,7 +60,7 @@ lines(t[[1]], basis_fct(t[[1]]) %*% beta_t , lwd = 2, lty = 2)
 We now set up pavpop to estimate in the sitar model
 ```{r}
 amp_cov <- make_cov_fct(id_cov, noise = FALSE)
-warp_cov <- make_cov_fct(id_cov, noise = FALSE)
+warp_cov <- make_cov_fct(id_cov, param = c(1, 1), noise = FALSE)
 
 res <- pavpop_amp(y, t, basis_fct, amp_fct, warp_fct, amp_cov, warp_cov, iter = c(10, 10))
 
@@ -75,13 +75,23 @@ lines(t_p, basis_fct(t_p) %*% beta_t , lwd = 2, lty = 2)
 lines(t_p, basis_fct(t_p) %*% res$c, lwd = 2, lty = 2, col = 'red')
 
 plot(as.numeric(w_t), as.numeric(res$w), xlab = 'true warp variables', 
-     ylab = 'predicted warp variables', pch = 19, col = c('green', 'blue'))
+     ylab = 'predicted warp variables', pch = 19, col = c('green', 'blue'), asp = 1)
 abline(0, 1, lty = 2)
+```
+
+Are the parameter estimates okay?
+```{r}
+# Noise standard deviation: 0.1
+res$sigma
+# Amplitude standard deviations: 2
+res$sigma * sqrt(res$amp_cov_par)
+# Warp standard deviations: c(0.1, 0.05)
+res$sigma * sqrt(res$warp_cov_par)
 ```
 
 ## Traditional sitar estimation
 
-```{r, echo = FALSE}
+```{r, message = FALSE}
 library(sitar)
 
 dat <- data.frame(x = unlist(t), y = unlist(y), id = rep(1:n, each = m))
@@ -105,6 +115,7 @@ for (i in 1:n)
 
 plot(as.numeric(w_t), rbind(-abc$b * exp(abc$c), exp(abc$c) - 1), 
      xlab = 'true warp variables', ylab = 'predicted warp variables', 
-     pch = 19, col = c('green', 'blue'))
+     pch = 19, col = c('green', 'blue'), asp = 1)
 abline(0, 1, lty = 2)
+
 ```
