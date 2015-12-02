@@ -9,7 +9,25 @@ So, what does it do?
 
 If you have a set of curves that all represent the same underlying object, but are not aligned, pavpop may be able to help. But it can go further than other curve regirstation methods, since it can also register curves that contain systematic differences in shape (i.e. basically any data set of functional data). Consider for example the 12 repetitions of acceleration signals arising from a from a pen writing.
 
-![raw acceleration data](http://i.imgur.com/4HW9lsR.png)
+![raw acceleration data](http://i.imgur.com/ZByTWIp.png)
+
+Using pavpop on the data will align them nicely, the result is shown in the following figure.
+
+![warped acceleration data](http://i.imgur.com/OkhZCmL.png)
+
+But other methods can produce give similar results?
+---------------------------------------------------
+
+True, but pavpop is more general than other available methods. It is based on maximum likelihood estimation, and given data it finds the most likely separation of the amplitude (vertical) and phase (horizontal) variation in data. Thus, in addition to the regularization imposed by the distributional assumptions, amplitude and phase variation will be implicitly regularized by means of a likelihood tradeoff. Warping functions that produce implausible amplitude variation (e.g. by overfitting in few points) will be deemed unlikely, and thus be avoided. As a result, pavpop can produce plausible warping functions when there are large systematic differences between samples---even in cases where the naked eye may not recognize a good alignment. Consider the following simulated data set consisting of 10 curves each observed at 100 points. TBD
+
+Why should I use pavpop?
+------------------------
+
+-   As opposed to most other registration methods, pavpop treats phase and amplitude variation equally and fits the model with both effects simultaneously. Thus, the bias related to conventional preprocessing or two-step tehcniques is eliminated.
+
+-   pavpop estimates all variance(/hyper/regularizaton) parameters from data using maximum likelihood estimation.
+
+-   Since pavpop does likelihood-based inference, conventional model checking tools can be used and a large array of classical statistical procedures can be imposed for further analyses.
 
 Installation
 ------------
