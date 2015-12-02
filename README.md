@@ -2,12 +2,19 @@
 pavpop
 ======
 
-pavpop is an R package for fitting phase and amplitude varying population pattern (PAVPOP) models on curve data.
+pavpop is an R package for fitting phase and amplitude varying population pattern (pavpop) models on curve data.
+
+So, what does it do?
+--------------------
+
+If you have a set of curves that all represent the same underlying object, but are not aligned, pavpop may be able to help. But it can go further than other curve regirstation methods, since it can also register curves that contain systematic differences in shape (i.e. basically any data set of functional data). Consider for example the 12 repetitions of acceleration signals arising from a from a pen writing.
+
+![raw acceleration data](http://i.imgur.com/4HW9lsR.png)
 
 Installation
 ------------
 
-You can install the latest version of pavpop using
+You can install the latest version of pavpop by running the following code in R.
 
 ``` r
 if (packageVersion("devtools") < 1.6) {
