@@ -49,7 +49,7 @@ So, let us try some different methods for aligning.
 
 *L2 warping* simply estimates the warping function (two-anchor point increasing spline) that gives the smallest squared residual. *Elastic curve alignment* uses the celebrated quare-root velocity function framwork, in particular through the `align_fPCA` function in the `fdasrvf` R package. And *pavpop*, well, use a pavpop model.
 
-Looking at the above figures, none of the alignments give overly clear results, although the elastic curve alignment generally seem to align the features better. But since the In the figures below, the estimated/predicted warping functions are plotted against the true warping functions.
+Looking at the above figures, none of the alignments give overly clear results, although the elastic curve alignment generally seem to align the features better. Also, all the estimated mean curves (yellow dashed), seem to model the shape of the true mean curve (black dashed) quite well. But since the data us simulated, we can verify which method does the best. In the figures below, the estimated/predicted warping functions are plotted against the true warping functions.
 
 | L2 warping | Elastic curve alignment | pavpop |
 | ---------- | ----------------------- | ------ |
