@@ -9,16 +9,28 @@ So, what does it do?
 
 If you have a set of curves that all represent the same underlying object, but are not aligned, pavpop is your friend. But it can go further than other curve regirstation methods. It can register curves that contain systematic differences in shape. Consider for example the 12 repetitions of acceleration signals arising from a from a pen writing.
 
-<img src="http://i.imgur.com/ZByTWIp.png" width="480">
-
+<p align="center">
+<img src="http://i.imgur.com/5aIvyKs.png" width="480">
+</p>
 Using pavpop on the data will align them nicely, the result is shown in the following figure.
 
-<img src="http://i.imgur.com/OkhZCmL.png" width="480">
-
+<p align="center">
+<img src="http://i.imgur.com/gw4JWUF.png" width="480">
+</p>
 But other methods can produce give similar results?
 ---------------------------------------------------
 
-True, but pavpop is more general than other available methods. It is based on maximum likelihood estimation, and given data it finds the most likely separation of the amplitude (vertical) and phase (horizontal) variation in data. Thus, in addition to the regularization imposed by the distributional assumptions, amplitude and phase variation will be implicitly regularized by means of a likelihood tradeoff. Warping functions that produce implausible amplitude variation (e.g. by overfitting in few points) will be deemed unlikely, and thus be avoided. As a result, pavpop can produce plausible warping functions when there are large systematic differences between samples---even in cases where the naked eye may not recognize a good alignment. Consider the following simulated data set consisting of 10 curves each observed at 100 points. TBD
+True, but pavpop is more general than other available methods. It is based on maximum likelihood estimation, and given data it finds the most likely separation of the amplitude (vertical) and phase (horizontal) variation in data. Thus, in addition to the regularization imposed by the distributional assumptions, the joint model for amplitude and phase variation will be implicitly regularized by means of a likelihood tradeoff. Warping functions that produce implausible amplitude variation (e.g. by overfitting in few points) will be deemed unlikely, and thus be avoided. As a result, pavpop can produce plausible warping functions when there are large systematic differences between samples---even in cases where the naked eye may not recognize a good alignment. Consider the following simulated data set consisting of 10 curves each observed at 100 points. The curves follow the same mean function (dashed), but the mean has been warped and amplitude variation have been added.
+
+<p align="center">
+<img src="http://i.imgur.com/skTjIL7.png" width="480">
+</p>
+So, let us try some different methods for aligning
+
+| L2 warping                                             | Elastic curve alignment                                | pavpop                                                 |
+|--------------------------------------------------------|--------------------------------------------------------|--------------------------------------------------------|
+| <img src="http://i.imgur.com/eJPEQVc.png" width="300"> | <img src="http://i.imgur.com/PSCPfiW.png" width="300"> | <img src="http://i.imgur.com/VjXVspm.png" width="300"> |
+|                                                        |
 
 Why should I use pavpop?
 ------------------------
