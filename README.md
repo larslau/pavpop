@@ -25,12 +25,23 @@ True, but pavpop is more general than other available methods. It is based on ma
 <p align="center">
 <img src="http://i.imgur.com/skTjIL7.png" width="480">
 </p>
-So, let us try some different methods for aligning
+So, let us try some different methods for aligning.
 
 | L2 warping                                             | Elastic curve alignment                                | pavpop                                                 |
 |--------------------------------------------------------|--------------------------------------------------------|--------------------------------------------------------|
 | <img src="http://i.imgur.com/eJPEQVc.png" width="300"> | <img src="http://i.imgur.com/PSCPfiW.png" width="300"> | <img src="http://i.imgur.com/VjXVspm.png" width="300"> |
 |                                                        |
+
+*L2 warping* simply estimates the warping function (two-anchor point increasing spline) that gives the smallest squared residual. *Elastic curve alignment* uses the celebrated quare-root velocity function framwork, in particular through the `align_fPCA` function in the `fdasrvf` R package. And *pavpop*, well, use a pavpop model.
+
+Looking at the above figures, none of the alignments give overly clear results, although the elastic curve alignment generally seem to align the features better. But since the In the figures below, the estimated/predicted warping functions are plotted against the true warping functions.
+
+| L2 warping                                             | Elastic curve alignment                                | pavpop                                                 |
+|--------------------------------------------------------|--------------------------------------------------------|--------------------------------------------------------|
+| <img src="http://i.imgur.com/idjEfaW.png" width="300"> | <img src="http://i.imgur.com/F7M2IJN.png" width="300"> | <img src="http://i.imgur.com/pgmGbQd.png" width="300"> |
+|                                                        |
+
+If the warping is good, all the curves should cluster closely, ideally along a line with slope 1 (little deformation of the mean). Here we see that both L2 warping and Elastic curve alignment have systematic deviations in the estimated warping functions, while pavpop predicts the warping functions neatly. The take home message: *a good alignment is often not the one that gives the best visual impression.*
 
 Why should I use pavpop?
 ------------------------
