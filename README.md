@@ -7,7 +7,7 @@ pavpop is an R package for fitting phase and amplitude varying population patter
 So, what does it do?
 --------------------
 
-If you have a set of curves that all represent the same underlying object, but are not aligned, pavpop may be able to help. But it can go further than other curve regirstation methods, since it can also register curves that contain systematic differences in shape (i.e. basically any data set of functional data). Consider for example the 12 repetitions of acceleration signals arising from a from a pen writing.
+If you have a set of curves that all represent the same underlying object, but are not aligned, pavpop is your friend. But it can go further than other curve regirstation methods. It can register curves that contain systematic differences in shape. Consider for example the 12 repetitions of acceleration signals arising from a from a pen writing.
 
 <img src="http://i.imgur.com/ZByTWIp.png" width="480">
 
