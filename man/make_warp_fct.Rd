@@ -5,7 +5,7 @@
 \title{Generate a warping function}
 \usage{
 make_warp_fct(type = c("shift", "linear", "piecewise-linear", "smooth"),
-  tw = NULL)
+  tw = NULL, fix_right = TRUE)
 }
 \arguments{
 \item{type}{type of warping function.}

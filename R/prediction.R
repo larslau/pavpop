@@ -19,7 +19,7 @@
 #' @keywords curve prediction
 #' @export
 
-predict_curve_verbose <- function(t_p, t, y, c, basis_fct, warp_fct, amp_cov, amp_cov_par, w = NULL, warp_cov = NULL, warp_cov_par = NULL, deriv = FALSE) {
+predict_curve_verbose <- function(t_p, t, y, c, basis_fct, warp_fct, amp_cov, amp_cov_par, w = NULL, warp_cov = NULL, warp_cov_par = NULL, deriv = FALSE, force_increasing = FALSE) {
   S <- amp_cov(t, amp_cov_par)
   S_p <- cov_rect(t, t_p, attr(amp_cov, 'cov_fct'), amp_cov_par)
   Ainv <- chol2inv(chol(S))
@@ -46,6 +46,13 @@ predict_curve_verbose <- function(t_p, t, y, c, basis_fct, warp_fct, amp_cov, am
   r <- y - basis_fct(warp_fct(w, t)) %*% c
   theta_pers   <- basis %*% c
   pred         <- theta_pers + S_p %*% Ainv %*% r
+
+  if (force_increasing) {
+    ispline <- make_basis_fct(kts = kts, intercept = TRUE, increasing = TRUE, order = 3, boundary = c(0, 1))
+    c <- spline_weights(list(pred), list(t_p), warp_fct, array(0,dim=c(mw,1)), list(diag(length(t_p))), ispline)
+    pred <- ispline(t_p) %*% c
+  }
+
   if (is.null(warp_cov_par)) {
     post <- NULL
   } else {

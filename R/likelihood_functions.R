@@ -23,7 +23,14 @@ like <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw) {
   warp_cov_par <- param[(n_par[1] + 1):length(param)]
   if (!is.null(warp_cov)) {
     C <- warp_cov(tw, warp_cov_par)
-    Cinv <- chol2inv(chol(C))
+    tryCatch(
+      Cinv <- chol2inv(chol(C))
+      , error = function(e) {
+        cat("failed to invert warp covariance in like: warp_cov_par = ",warp_cov_par,"\n")
+        # save(tw,warp_cov_par,warp_cov,C,file = 'error.RData')
+        return(e)
+      }
+    )
   } else {
     C <- Cinv <- matrix(0, length(tw), length(tw))
   }
@@ -35,7 +42,15 @@ like <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw) {
   for (i in 1:n) {
     if (!is.null(amp_cov)) {
       S <- amp_cov(t[[i]], amp_cov_par)
-      U <- chol(S)
+      tryCatch(
+        U <- chol(S)
+        , error = function(e) {
+          cat("failed to invert amp covariance in like: amp_cov_par = ",amp_cov_par,"\n")
+          ti <- t[[i]]
+          # save(ti,amp_cov_par,amp_cov,S,file = 'error.RData')
+          return(e)
+        }
+      )
     } else {
       # TODO: SPARSE MATRIX COULD MAKE IT FASTER, THEN 'diag' cannot be used for logdet
       S <- U <- diag(1, m[i])

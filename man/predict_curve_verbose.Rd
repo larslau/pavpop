@@ -5,7 +5,8 @@
 \title{Predict individual curves}
 \usage{
 predict_curve_verbose(t_p, t, y, c, basis_fct, warp_fct, amp_cov, amp_cov_par,
-  w = NULL, warp_cov = NULL, warp_cov_par = NULL, deriv = FALSE)
+  w = NULL, warp_cov = NULL, warp_cov_par = NULL, deriv = FALSE,
+  force_increasing = FALSE)
 }
 \arguments{
 \item{t_p}{evaluation points for prediction.}

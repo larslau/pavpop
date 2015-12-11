@@ -150,7 +150,9 @@ make_cov_fct <- function(cov_fct, noise = TRUE, param = NULL, inv_cov_fct = NULL
               S[i, (i + 1):m] <- S[(i + 1):m, i] <- cov_fct(abs(t[i] - t[(1 + i):m]), param[-(1:(knots - 1))], ...)
             }
           }
-          return(ns %*% t(ns) * S + diag(1, nrow = length(t)))
+          S <- ns %*% t(ns) * S
+          if (noise) diag(S) <- diag(S) + 1
+          return(S)
         }
       }
     } else {

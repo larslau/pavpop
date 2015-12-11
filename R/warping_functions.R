@@ -8,7 +8,7 @@
 
 
 #TODO: Initialize is not used anymore?
-make_warp_fct <- function(type = c('shift', 'linear', 'piecewise-linear', 'smooth'), tw = NULL) {
+make_warp_fct <- function(type = c('shift', 'linear', 'piecewise-linear', 'smooth'), tw = NULL, fix_right = TRUE) {
   # Match type argument
   types <- c('shift', 'linear', 'piecewise-linear', 'smooth')
   type <- types[pmatch(type, types)]
@@ -39,6 +39,7 @@ make_warp_fct <- function(type = c('shift', 'linear', 'piecewise-linear', 'smoot
   } else if (type == 'piecewise-linear') {
     if (any(is.na(tw))) stop('all anchor points tw should be supplied for type \'piecewise-linear\'')
     if (min(tw) < 0 | max(tw) > 1) stop('anchor points tw should be within the interval (0, 1)')
+    if (!fix_right) stop('piecewise-linear without fixed endpoints not implemented')
     mw <- length(tw)
 
     v <- function(w, t, w_grad = FALSE) {
@@ -67,10 +68,10 @@ make_warp_fct <- function(type = c('shift', 'linear', 'piecewise-linear', 'smoot
     mw <- length(tw)
     # Hyman spline warping function
     v <- function(w, t, w_grad = FALSE) {
-      x <- c(0, tw, 1)
-      y <- c(0, tw + w, 1)
+      x <- if (fix_right) c(0, tw, 1) else c(0, tw)
+      y <- if (fix_right) c(0, tw + w, 1) else c(0, tw + w)
       if (!all(diff(y) > 0)) {
-        y <- c(0, tw + make_homeo(w, tw, epsilon = 0.1), 1)
+        y <- if (fix_right) c(0, tw + make_homeo(w, tw, epsilon = 0.1), 1) else c(0, tw + make_homeo(w, tw, epsilon = 0.1))
       }
       if (!w_grad){
         return(spline(x, y, xout = t, method = 'hyman')$y)
@@ -81,7 +82,7 @@ make_warp_fct <- function(type = c('shift', 'linear', 'piecewise-linear', 'smoot
         m <- length(t)
         dv <- matrix(0, m, mw)
         for (j in 1:mw) {
-          h_tmp <- rep(0, mw + 2)
+          h_tmp <- if (fix_right) rep(0, mw + 2) else rep(0, mw + 1)
           h_tmp[j + 1] <- epsilon
           dv[, j] <- (spline(x, y + h_tmp, xout = t, method = 'hyman')$y
                       - spline(x, y - h_tmp, xout = t, method = 'hyman')$y) / (2 * epsilon)
@@ -114,8 +115,16 @@ make_homeo <- function(w, tw, epsilon = 0.1) {
   ui[cbind(2:(nw + 1), 1:nw)] <- -1
 
   ci <- (epsilon - 1) * diff(c(0, tw, 1))
-  res <- constrOptim(theta = rep(0, nw), f = function(x) mean((x - w)^2),
-                     grad = function(x) 2 / nw * (x - w), ui = ui, ci = ci, method = "BFGS")
+  tryCatch(
+    res <- constrOptim_inf(theta = rep(0, nw), f = function(x) mean((x - w)^2),
+                       grad = function(x) 2 / nw * (x - w), ui = ui, ci = ci, method = "BFGS")
+    ,
+    error = function(e) {
+      save(w,tw,nw,ui,ci,file = 'error.RData')
+      print(paste("make_homeo error:  ",e),'\n')
+      return(e)
+    }
+  )
 
   return(res$par)
 }
