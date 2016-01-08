@@ -4,25 +4,48 @@
 \alias{spline_weights}
 \title{Estimate spline weights}
 \usage{
-spline_weights(y, t, warp_fct, w, Sinv, basis_fct, weights = NULL)
+spline_weights(y, t, Sinv = NULL, basis_fct, weights = NULL)
 }
 \arguments{
-\item{y}{list of \eqn{n} functional observations.}
+\item{y}{list, matrix or data.frame containing \eqn{n} functional observations.}
 
-\item{t}{list of time points corresponding to y.}
+\item{t}{(warped) time points corresponding to y in the same format.}
 
-\item{warp_fct}{warping function.}
-
-\item{w}{warping parameters.}
-
-\item{Sinv}{global precision matrix for amplitude variation.}
+\item{Sinv}{list of precision matrices for amplitude variation. If \code{NULL}, iid.
+Gaussian noise is assumed}
 
 \item{basis_fct}{function for generating a basis.}
 
-\item{weights}{weights for the individual observations}
+\item{weights}{weights for the individual observations. Mainly used for pavpop clustering.}
 }
 \description{
-Estimate spline weights for given warps and covariances
+Estimate spline weights for given warps and covariances. The method seamlessly
+handles positivity constraints (specified in the basis function).
+}
+\examples{
+# Evaluation points
+t <- seq(0, 1, length = 100)
+
+# Simulate data
+y <- t^2 * sin(8 * t) + t
+plot(t, y, type = 'l', lwd = 2, lty = 2)
+
+# Add noise to data
+y <- y + rnorm(length(y), sd = 0.1)
+points(t, y, pch = 19, cex = 0.5)
+
+# Basis function knots
+kts <- seq(0, 1, length = 12)[2:11]
+
+# Construct B-spline basis function
+basis_fct <- make_basis_fct(kts = kts, control = list(boundary = c(0, 1)))
+
+# Fit B-spline to data assuming iid. noise
+weights <- spline_weights(y, t, basis_fct = basis_fct)
+lines(t, basis_fct(t) \%*\% weights, col = 'red', lwd = 2)
+}
+\seealso{
+make_basis_fct
 }
 \keyword{basis}
 \keyword{spline}

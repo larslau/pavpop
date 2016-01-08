@@ -34,7 +34,7 @@ So, let us try some different methods for aligning.
 
 *L2 warping* simply estimates the warping function (two-anchor point increasing spline) that gives the smallest squared residual. *Elastic curve alignment* uses the celebrated quare-root velocity function framwork, in particular through the `align_fPCA` function in the `fdasrvf` R package. And *pavpop*, well, use a pavpop model.
 
-Looking at the above figures, none of the alignments give overly clear results, although the elastic curve alignment generally seem to align the features better. Also, all the estimated mean curves (yellow dashed), seem to model the shape of the true mean curve (black dashed) quite well. But since the data us simulated, we can verify which method does the best. In the figures below, the estimated/predicted warping functions are plotted against the true warping functions.
+Looking at the above figures, none of the alignments give overly clear results, although the elastic curve alignment generally seem to align the features better. Also, all the estimated mean curves (yellow dashed), seem to model the shape of the true mean curve (black dashed) quite well. But since the data is simulated, we can verify which method does the best. In the figures below, the estimated/predicted warping functions are plotted against the true warping functions.
 
 | L2 warping                                             | Elastic curve alignment                                | pavpop                                                 |
 |--------------------------------------------------------|--------------------------------------------------------|--------------------------------------------------------|
@@ -66,6 +66,12 @@ devtools::install_github('larslau/pavpop')
 
 News
 ----
+
+### Version 0.10 release note
+
+Version 0.10 marks a major update of the package. Most importantly, the documentation has been updated throughout and a large number of new examples and vignettes have been added. The output of the vignettes is now readily available in in pdf format in the `vignettes` folder. In addition, the possibilities for specifying amplitude varation (through Gaussian processes, or a functional basis with Gaussian weights) have been unified, and the results can now be handled similarly. The state of the `pavpop_clustering` method is questionable in the current version, it will receive a major update in a future release.
+
+The most important new feature is the possibility to use models with full unstructred covariances through the covariance function `unstr_cov`. This is particularly useful for modeling warp variables and amplitude variation described in low-dimensional functional bases.
 
 ### Version 0.9 release note
 

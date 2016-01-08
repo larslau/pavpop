@@ -5,15 +5,32 @@
 \title{Generate a warping function}
 \usage{
 make_warp_fct(type = c("shift", "linear", "piecewise-linear", "smooth"),
-  tw = NULL, fix_right = TRUE)
+  tw = NULL, control = list(wleft = "fixed", wright = "fixed"))
 }
 \arguments{
-\item{type}{type of warping function.}
+\item{type}{type of warping function. See 'Details'.}
 
-\item{tw}{anchor points for the warping parameters. Needed for types 'piecewise-linear' and 'smooth'.}
+\item{tw}{anchor points for the warping parameters. Needed for types 'piecewise-linear' and 'smooth'. \bold{Note:} boundary points must be included.}
+
+\item{control}{list of control arguments. Entries \code{wleft} and \code{wright} control
+whether the warping function is fixed at the boundary (\code{'fixed'}) or wheter
+extrapolation from the last interior knot should be done (\code{'extrapolate'}).}
 }
 \description{
-This function generates a certain kind of warping function that can be used by pavpop.
+This function generates different types of warping functions that can be used with
+pavpop.
+}
+\details{
+The possible types of warping functions are
+\describe{
+  \item{\code{shift}}{a horizontal shift.}
+  \item{\code{linear}}{a linear streach of the curves.}
+  \item{\code{pieceiwse-linear}}{a piecewise linear deformation of the curves.
+                                 Anchor points are given by \code{tw}.}
+  \item{\code{smooth}}{a smooth nonlinear deformation of the curves,
+                                 produced by an increasing spline (Hyman filtered).
+                                 Anchor points are given by \code{tw}.}
+}
 }
 \keyword{warping}
 

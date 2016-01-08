@@ -4,22 +4,86 @@
 \alias{make_basis_fct}
 \title{Generate basis function}
 \usage{
-make_basis_fct(kts, intercept = FALSE, increasing = FALSE,
-  only_intercept = FALSE, order = 3, boundary = c(0, 1))
+make_basis_fct(kts = NULL, df = NULL, type = "B-spline",
+  intercept = FALSE, control = list())
 }
 \arguments{
 \item{kts}{a sequence of increasing points specifying the placement of the knots.}
 
+\item{df}{degrees of freedom of the spline basis. Knots are chosen equidistantly.}
+
+\item{type}{the type of basis function you want. Currently supported choices are \code{'B-spline'},
+\code{'increasing'} and \code{'intercept'}. See details for more information.}
+
 \item{intercept}{logical. Should the basis include an intercept?}
 
-\item{increasing}{logical. Should the basis be an I-spline?}
-
-\item{order}{the order of the basis splines.}
-
-\item{boundary}{boundary knots.}
+\item{control}{list of control parameters. Most importantly is \code{boundary} which
+contains boundary points for a B-spline basis. See details for more options.}
 }
 \description{
-Method for generating a 'basis function' function
+Method for generating a 'basis function' function, that outputs a functional basis.
+}
+\details{
+Basis types \code{'Fourier'} and \code{'wavelet'}
+will become available soon. If needed please contact the developer.
+
+The control argument takes a list with the following entries
+\code{order} and \code{constraints} and \code{sparse}
+\describe{
+  \item{\code{boundary}}{boundary knots for the basis spline.}
+  \item{\code{order}}{order of the spline, if \code{NULL}, B-splines have order
+  4 (cubic spline) and I-splines (\code{type = 'increasing'}) have order 3.}
+  \item{\code{constraints}}{positivity constraints, if set to \code{'positive'},
+  only positive weights are allowed}
+  \item{\code{sparse}}{logical. Should sparse matrices be used?}
+}
+}
+\examples{
+# Basis function knots
+kts <- seq(0, 1, length = 12)[2:11]
+
+# Construct B-spline basis function
+basis_fct <- make_basis_fct(kts = kts, control = list(boundary = c(0, 1)))
+
+# Evaluation points
+t <- seq(0, 1, length = 100)
+A <- basis_fct(t)
+plot(t, t, type = 'n', ylim = range(A))
+for (i in 1:ncol(A)) lines(t, A[, i], col = rainbow(ncol(A))[i])
+
+# Evaluate derivatives
+Ad <- basis_fct(t, TRUE)
+plot(t, t, type = 'n', ylim = range(Ad))
+for (i in 1:ncol(A)) lines(t, Ad[, i], col = rainbow(ncol(Ad))[i])
+
+# Construct I-spline
+# Knots should contain the left and right endpoints
+kts_inc <- seq(0, 1, length = 10)
+basis_fct_inc <- make_basis_fct(kts = kts_inc, type = 'increasing')
+A_inc <- basis_fct_inc(t)
+plot(t, t, type = 'n', ylim = range(A_inc))
+for (i in 1:ncol(A_inc)) lines(t, A_inc[, i], col = rainbow(ncol(A))[i])
+
+# Evaluate derivatives
+Ad_inc <- basis_fct_inc(t, deriv = TRUE)
+plot(t, t, type = 'n', ylim = range(Ad_inc))
+for (i in 1:ncol(Ad_inc)) lines(t, Ad_inc[, i], col = rainbow(ncol(Ad))[i])
+
+# Simulate data
+y <- t^2 * sin(8 * t) + t
+plot(t, y, type = 'l', lwd = 2, lty = 2)
+
+# Add noise to data
+y <- y + rnorm(length(y), sd = 0.1)
+points(t, y, pch = 19, cex = 0.5)
+
+# Fit B-spline to data assuming iid. noise
+weights <- spline_weights(y, t, basis_fct = basis_fct)
+lines(t, A \%*\% weights, col = 'red', lwd = 2)
+
+# Fit increasing spline
+pos_weights <- spline_weights(y, t, basis_fct = basis_fct_inc)
+lines(t, A_inc \%*\% pos_weights, col = 'blue', lwd = 2)
 }
 \keyword{spline}
 

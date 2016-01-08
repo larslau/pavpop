@@ -1,0 +1,115 @@
+---
+title: "Advanced registration examples"
+author: "Lars Lau Raket"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Simple examples}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+```{r, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(warning = FALSE, comment = "#>", fig.height = 5, fig.width = 7)
+library(pavpop)
+library(MASS)
+```
+In this vignette we will consider some more advanced examples of data that needs registration.
+
+## Example 1: Serial correlation, smooth warping functions and latent warp variables with unknown covariance
+```{r}
+# Number of samples
+n <- 30 
+# Number of observation points
+m <- 100 
+
+# Observation points
+t <- seq(0, 1, length = m + 2)[2:(m + 1)] 
+
+# Common basis function (both mean and amplitude variation)
+kts <- seq(0, 1, length = 12)[2:11]
+basis_fct <- make_basis_fct(kts = kts, intercept = TRUE)
+df <- attr(basis_fct, 'df')
+
+# Generate true mean weights 
+beta_t <- sample(-1:1, df, replace = TRUE) * rexp(df)
+
+# Set noise standard deviation
+sigma <- 0.05
+
+# Make amplitude covariance
+amp_par_t <- c(100, 0.3, 3)
+amp_cov <- make_cov_fct(Matern, noise = TRUE)
+
+# Generate warping function and random parameters
+tw <- seq(0, 1, length = 4)
+warp_fct <- make_warp_fct(type = 'smooth', tw = tw)
+
+# Covariance for the latent warp variables 
+warp_cov <- make_cov_fct(unstr_cov, noise = FALSE, param = c(1, 1, 0))
+warp_cov_true <- matrix(c(10, 8, 8, 15), 2, 2)
+w_t <- replicate(n, (t(chol(warp_cov_true)) %*% rnorm(2, sd = sigma))[, 1])
+
+# Generate data
+y <- lapply(1:n, function(i) {(basis_fct(warp_fct(w_t[, i], t)) %*% beta_t 
+                               + sigma * t(chol(amp_cov(t, amp_par_t))) %*% rnorm(m))[, 1]}) 
+
+t <- lapply(1:n, function(x) t)
+
+# Plot observed curves
+plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', 
+     xlab = 't', ylab = expression(theta(t)))
+for (i in 1:n) lines(t[[i]], y[[i]], col = rainbow(n)[i])
+lines(t[[1]], basis_fct(t[[1]]) %*% beta_t , lwd = 2, lty = 2)
+```
+
+Estimate in the model
+
+```{r}
+
+res <- pavpop(y, t, basis_fct, warp_fct, amp_cov = amp_cov, warp_cov = warp_cov, 
+              iter = c(10, 5))
+```
+
+
+We can not plot the results
+
+```{r}
+plot(as.numeric(w_t), as.numeric(res$w), xlab = 'true shifts', ylab = 'estimated/predicted shifts', 
+     pch = 19, col = c('green', 'blue'), ylim = range(res$w))
+abline(0, 1, lty = 2)
+
+plot(0, 0, xlim = c(-0.2, 1.2), ylim = range(y), type = 'n', 
+     xlab = 'warped t', ylab = expression(theta(t)), main = 'Aligned samples')
+for (i in 1:n) lines(warp_fct(res$w[, i], t[[i]]), y[[i]], col = rainbow(n)[i])
+lines(t[[1]], basis_fct(t[[1]]) %*% res$c, lwd = 2, lty = 2, col = 'blue')
+lines(t[[1]], basis_fct(t[[1]]) %*% beta_t, lwd = 2, lty = 2, col = 'blue')
+
+
+# Compare noise variance
+
+sigma^2
+res$sigma^2
+
+# Compare amplitude variance parameters
+
+# True parameters
+c(sigma^2 * amp_par_t[1], amp_par_t[-1])
+# Estimated
+c(res$sigma^2 * res$amp_cov_par[1], res$amp_cov_par[-1])
+
+
+
+# Compare estimated variance parameters of warps
+
+# True covariance matrix
+sigma^2 * warp_cov_true
+
+# Covariance matrix of true shifts 
+var(t(w_t))
+
+# Estimated covariance matrix
+res$sigma^2 * warp_cov(1:2, res$warp_cov_par)
+
+# Covariance matrix for predicted warps
+var(t(res$w))
+```

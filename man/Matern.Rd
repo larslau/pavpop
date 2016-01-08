@@ -7,12 +7,12 @@
 Matern(d, param = c(scale = 1, range = 1, smoothness = 2))
 }
 \arguments{
-\item{d}{evaluation points.}
+\item{d}{distance between two points.}
 
 \item{param}{parameter vector consisting of scale, range and smoothness.}
 }
 \description{
-Functional form of Matern covariance function. Code adapted from the fields package.
+Functional form of Matern covariance function. Code adapted from the \code{fields} package.
 }
 \note{
 Method taken from the \code{fields} package.
@@ -20,6 +20,9 @@ Method taken from the \code{fields} package.
 \examples{
 Matern(seq(0, 1, length = 10), param = c(scale = 1, range = 0.5, smoothness = 2))
 Matern(seq(0, 1, length = 10), param = c(scale = 1, range = 1, smoothness = 2))
+}
+\seealso{
+\code{link{make_cov_fct}}
 }
 \keyword{covariance}
 

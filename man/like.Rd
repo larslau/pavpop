@@ -2,9 +2,12 @@
 % Please edit documentation in R/likelihood_functions.R
 \name{like}
 \alias{like}
+\alias{like_amp}
 \title{Locally linearized likelihood function}
 \usage{
 like(param, n_par, r, Zis, amp_cov, warp_cov, t, tw)
+
+like_amp(param, n_par, r, Zis, amp_cov, warp_cov, amp_fct, t, tw)
 }
 \arguments{
 \item{param}{variance parameters.}
@@ -23,11 +26,16 @@ like(param, n_par, r, Zis, amp_cov, warp_cov, t, tw)
 
 \item{tw}{anchor points for warp variables.}
 
-\item{observation_weights}{vector of weights for the individual functional samples to be applied to the likelihood. This is useful for clustering analysis.}
+\item{amp_fct}{functional basis that amplitude variation should be expressed in. If used,
+it is automatically assumed that iid. Gaussian noise is present in the data.}
 }
 \description{
 Computes the linearized likelihood given the residual around a given warp and the corresponding Jacobians.
 }
+\section{Functions}{
+\itemize{
+\item \code{like_amp}: Likelihood function with amplitude variation in a functional basis.
+}}
 \keyword{likelihood}
 \keyword{linearization}
 

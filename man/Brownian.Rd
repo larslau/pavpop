@@ -4,7 +4,7 @@
 \alias{Brownian}
 \title{Brownian covariance functions}
 \usage{
-Brownian(t, param = c(tau = 1), type = "motion")
+Brownian(t, param = c(tau = 1), type = "motion", range = c(0, 1))
 }
 \arguments{
 \item{t}{two-dimensional vector of evaluation points.}
@@ -12,6 +12,9 @@ Brownian(t, param = c(tau = 1), type = "motion")
 \item{param}{parameter vector consisting of scale parameter tau.}
 
 \item{type}{type of covariance, either 'motion' or 'bridge'.}
+
+\item{range}{interval of the process. If \code{type = 'motion'} only the first point
+is used.}
 }
 \description{
 Functional form of Brownian covariance functions. Brownian bridge is on [0, 1].
@@ -19,6 +22,9 @@ Functional form of Brownian covariance functions. Brownian bridge is on [0, 1].
 \examples{
 Brownian(t = c(1, 1))
 Brownian(t = c(1, 1), type = 'bridge')
+}
+\seealso{
+\code{link{make_cov_fct}}
 }
 \keyword{covariance}
 

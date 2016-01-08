@@ -4,10 +4,10 @@
 \alias{ispline}
 \title{Generate increasing spline basis}
 \usage{
-ispline(x, knots, d)
+ispline(t, knots, d)
 }
 \arguments{
-\item{x}{predictor variable.}
+\item{t}{evaluation points.}
 
 \item{knots}{the internal breakpoints of the spline.}
 

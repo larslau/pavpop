@@ -50,7 +50,7 @@ We now set up the pavpop model to estimate in the model
 ```{r}
 # Set up basis function
 kts <- seq(-0.2, 1.2, length = 15)[2:14]
-basis_fct <- make_basis_fct(kts = kts, intercept = TRUE, order = 3, boundary = c(-0.2, 1.2))
+basis_fct <- make_basis_fct(kts = kts, intercept = TRUE, control = list(boundary = c(-0.2, 1.2)))
 
 # Set up warp function
 warp_fct <- make_warp_fct(type = 'shift')
@@ -163,17 +163,14 @@ lines(t[[1]], theta(t[[1]]), lwd = 2, lty = 2)
 Let us first ignore the uncertainty and use the same model as in Example 1.
 
 ```{r}
-res_no_uncert <- pavpop(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, 
-                        iter = c(1, 5))
+res_no_uncert <- pavpop(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, iter = c(1, 10))
 ```
 
 And now compare to the correct specification of the model
 
 ```{r}
-system.time({
 res <- pavpop(y, t, basis_fct, warp_fct, amp_cov = amp_cov, warp_cov = warp_cov, 
-              iter = c(5, 5))
-})
+              iter = c(10, 5))
 ```
 
 

@@ -1,5 +1,3 @@
-#TODO: CHECK OBSERVATION WEIGHTS = 1 CALCULATIONS
-
 #' Locally linearized likelihood function
 #'
 #' Computes the linearized likelihood given the residual around a given warp and the corresponding Jacobians.
@@ -9,28 +7,21 @@
 #' @param Zis list of Jacobians in the warps of the mean function around the given warp.
 #' @param amp_cov function for generating amplitude covariance matrix.
 #' @param warp_cov function for generating warp covariance function
+#' @param amp_fct functional basis that amplitude variation should be expressed in. If used,
+#' it is automatically assumed that iid. Gaussian noise is present in the data.
 #' @param t array of time variables corresponding to r.
 #' @param tw anchor points for warp variables.
-#' @param observation_weights vector of weights for the individual functional samples to be applied to the likelihood. This is useful for clustering analysis.
 #' @keywords likelihood
 #' @keywords linearization
 #' @export
 #' @importFrom Matrix t
 
 like <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw) {
-  # TODO: WARPED TIME!!!
   amp_cov_par <- param[1:n_par[1]]
   warp_cov_par <- param[(n_par[1] + 1):length(param)]
   if (!is.null(warp_cov)) {
     C <- warp_cov(tw, warp_cov_par)
-    tryCatch(
-      Cinv <- chol2inv(chol(C))
-      , error = function(e) {
-        cat("failed to invert warp covariance in like: warp_cov_par = ",warp_cov_par,"\n")
-        # save(tw,warp_cov_par,warp_cov,C,file = 'error.RData')
-        return(e)
-      }
-    )
+    Cinv <- chol2inv(chol(C))
   } else {
     C <- Cinv <- matrix(0, length(tw), length(tw))
   }
@@ -42,15 +33,7 @@ like <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw) {
   for (i in 1:n) {
     if (!is.null(amp_cov)) {
       S <- amp_cov(t[[i]], amp_cov_par)
-      tryCatch(
-        U <- chol(S)
-        , error = function(e) {
-          cat("failed to invert amp covariance in like: amp_cov_par = ",amp_cov_par,"\n")
-          ti <- t[[i]]
-          # save(ti,amp_cov_par,amp_cov,S,file = 'error.RData')
-          return(e)
-        }
-      )
+      U <- chol(S)
     } else {
       # TODO: SPARSE MATRIX COULD MAKE IT FASTER, THEN 'diag' cannot be used for logdet
       S <- U <- diag(1, m[i])
@@ -78,16 +61,21 @@ like <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw) {
 }
 
 
+#' @describeIn like Likelihood function with amplitude variation in a functional basis.
 
-like_amp <- function(param, n_par, r, Zis, amp_cov, warp_cov, amp_fct, warped_amp, t, tw) {
+like_amp <- function(param, n_par, r, Zis, amp_cov, warp_cov, amp_fct, t, tw) {
   amp_cov_par <- param[1:n_par[1]]
   warp_cov_par <- param[(n_par[1] + 1):length(param)]
-  df <- attr(amp_fct, 'df')
+
+  # Compute warp cov
   if (!is.null(warp_cov)) {
     Cinv <- chol2inv(chol(warp_cov(tw, warp_cov_par)))
   } else {
     Cinv <- matrix(0, length(tw), length(tw))
   }
+
+  # Compute amp cov
+  df <- attr(amp_fct, 'df')
   if (!is.null(amp_cov)) {
     Sinv <- chol2inv(chol(amp_cov(1:df, amp_cov_par)))
   }
@@ -102,14 +90,14 @@ like_amp <- function(param, n_par, r, Zis, amp_cov, warp_cov, amp_fct, warped_am
     logdet_tmp <- 0
 
     if (!is.null(amp_cov)) {
-      SLR <- diag(m[i]) - A %*% chol2inv(chol(Sinv + t(A) %*% A)) %*% t(A)
+      SLR <- diag(m[i]) - A %*% solve(Sinv + t(A) %*% A, t(A))
     } else {
       SLR <- diag(m[i], x = 1)
     }
 
     if (!is.null(warp_cov)) {
       LR <- chol2inv(chol(as.matrix(Cinv + t(ZZ) %*% SLR %*% ZZ)))
-      logdet_tmp <- -determinant(LR)$modulus[1]
+      logdet_tmp <- determinant(LR)$modulus[1]
     } else {
       LR <- Matrix(data = 0, nrow = nrow(Cinv), ncol = nrow(Cinv))
     }
@@ -126,46 +114,6 @@ like_amp <- function(param, n_par, r, Zis, amp_cov, warp_cov, amp_fct, warped_am
   return(res)
 }
 
-sigmasq_amp <- function(param, n_par, r, Zis, amp_cov, warp_cov, amp_fct, warped_amp, t, tw) {
-  amp_cov_par <- param[1:n_par[1]]
-  warp_cov_par <- param[(n_par[1] + 1):length(param)]
-  df <- attr(amp_fct, 'df')
-  if (!is.null(warp_cov)) {
-    Cinv <- chol2inv(chol(warp_cov(tw, warp_cov_par)))
-  } else {
-    Cinv <- matrix(0, length(tw), length(tw))
-  }
-  if (!is.null(amp_cov)) {
-    Sinv <- chol2inv(chol(amp_cov(1:df, amp_cov_par)))
-  }
-
-  n <- length(r)
-  m <- sapply(r, length)
-
-  sq <- logdet <- 0
-  for (i in 1:n) {
-    A <- amp_fct(t[[i]])
-    ZZ <- Zis[[i]]
-
-    if (!is.null(amp_cov)) {
-      SLR <- diag(m[i]) - A %*% chol2inv(chol(Sinv + t(A) %*% A)) %*% t(A)
-    } else {
-      SLR <- diag(m[i], x = 1)
-    }
-
-    if (!is.null(warp_cov)) {
-      LR <- chol2inv(chol(as.matrix(Cinv + t(ZZ) %*% SLR %*% ZZ)))
-    } else {
-      LR <- Matrix(data = 0, nrow = nrow(Cinv), ncol = nrow(Cinv))
-    }
-
-    rr <- SLR %*% r[[i]]
-    rz <- as.numeric(t(ZZ) %*% rr)
-    sq <- sq + t(r[[i]]) %*% rr - t(rz) %*% LR %*% rz
-  }
-  sigmahat <- as.numeric(sq / sum(m))
-  return(sigmahat)
-}
 
 #' Locally linearized likelihood function cluster
 #'
@@ -360,9 +308,11 @@ ind_like <- function(param, sigma_sq, n_par, r, Zi, amp_cov, warp_cov, t, tw) {
 }
 
 
-#' Noise scale estimate from locally linearized likelihood function
+#' Variance scale estimate from locally linearized likelihood function
 #'
-#' Computes the noise scale estimate from the linearized likelihood given the residual around a predicted warp and the corresponding Jacobians.
+#' Estimates the common variance scale of all random effects in the model
+#' from the linearized likelihood given the residual around a predicted
+#' warp and the corresponding Jacobians.
 #' @inheritParams like
 #' @keywords likelihood
 #' @keywords linearization
@@ -407,6 +357,50 @@ sigmasq <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw) {
   return(sigmahat)
 }
 
+#' @describeIn sigmasq Variance scale estimate from locally linearized
+#' likelihood function with amplitude variation described in a functional basis.
+
+sigmasq_amp <- function(param, n_par, r, Zis, amp_cov, warp_cov, amp_fct, t, tw) {
+  amp_cov_par <- param[1:n_par[1]]
+  warp_cov_par <- param[(n_par[1] + 1):length(param)]
+  df <- attr(amp_fct, 'df')
+  if (!is.null(warp_cov)) {
+    Cinv <- chol2inv(chol(warp_cov(tw, warp_cov_par)))
+  } else {
+    Cinv <- matrix(0, length(tw), length(tw))
+  }
+  if (!is.null(amp_cov)) {
+    Sinv <- chol2inv(chol(amp_cov(1:df, amp_cov_par)))
+  }
+
+  n <- length(r)
+  m <- sapply(r, length)
+
+  sq <- logdet <- 0
+  for (i in 1:n) {
+    A <- amp_fct(t[[i]])
+    ZZ <- Zis[[i]]
+
+    if (!is.null(amp_cov)) {
+      SLR <- diag(m[i]) - A %*% chol2inv(chol(Sinv + t(A) %*% A)) %*% t(A)
+    } else {
+      SLR <- diag(m[i], x = 1)
+    }
+
+    if (!is.null(warp_cov)) {
+      LR <- chol2inv(chol(as.matrix(Cinv + t(ZZ) %*% SLR %*% ZZ)))
+    } else {
+      LR <- Matrix(data = 0, nrow = nrow(Cinv), ncol = nrow(Cinv))
+    }
+
+    rr <- SLR %*% r[[i]]
+    rz <- as.numeric(t(ZZ) %*% rr)
+    sq <- sq + t(r[[i]]) %*% rr - t(rz) %*% LR %*% rz
+  }
+  sigmahat <- as.numeric(sq / sum(m))
+  return(sigmahat)
+}
+
 #' Posterior of the data given the random warping parameters
 #'
 #' This function calculates the posterior of the data given the random warping parameters
@@ -414,8 +408,8 @@ sigmasq <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw) {
 #' @param t evaluation points.
 #' @param y values at evaluation points.
 #' @param basis_fct basis function to describe the mean function.
-#' @param c spline coefficients.
-#' @param Ainv precision matrix for amplitude variation.
+#' @param c basis coefficients.
+#' @param Sinv precision matrix for amplitude variation.
 #' @param Cinv precision matrix for the warping parameters.
 #' @keywords warping
 #' @keywords posterior
@@ -437,21 +431,19 @@ posterior <- function(w, warp_fct, t, y, basis_fct, c, Sinv, Cinv) {
 #' @param y values at evaluation points.
 #' @param tw anchor points for the warping parameters.
 #' @param c B-spline coefficients.
-#' @param Ainv precision matrix for amplitude variation.
+#' @param Sinv precision matrix for amplitude variation.
 #' @param Cinv precision matrix for the warping parameters.
 #' @param basis_fct basis function to describe the mean function.
-#' @param smooth_warp logical. Should warping functions be based on a monotonic cubic spline?
 #' @keywords warping
 #' @keywords posterior
-#' @export
 
-posterior_grad <- function(w, dwarp, t, y, tw, c, Ainv, Cinv, basis_fct) {
+posterior_grad <- function(w, dwarp, t, y, tw, c, Sinv, Cinv, basis_fct) {
   vt <- v(w, t, tw, smooth = smooth_warp, smooth_warp = FALSE)
   vt[vt < 0] <- 0
   vt[vt > 1] <- 1
   r <- basis_fct(vt) %*% c - y
   theta_d <- basis_fct(vt, deriv = TRUE) %*% c
-  grad <- 2 * t(r) %*% Ainv %*% (dwarp * theta_d[, 1])
+  grad <- 2 * t(r) %*% Sinv %*% (dwarp * theta_d[, 1])
   return(as.numeric(grad + 2 * w %*% Cinv))
 }
 
@@ -524,3 +516,5 @@ posterior_grad <- function(w, dwarp, t, y, tw, c, Ainv, Cinv, basis_fct) {
 #   }
 #   return(w_pred)
 # }
+
+

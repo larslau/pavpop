@@ -2,9 +2,12 @@
 % Please edit documentation in R/likelihood_functions.R
 \name{sigmasq}
 \alias{sigmasq}
-\title{Noise scale estimate from locally linearized likelihood function}
+\alias{sigmasq_amp}
+\title{Variance scale estimate from locally linearized likelihood function}
 \usage{
 sigmasq(param, n_par, r, Zis, amp_cov, warp_cov, t, tw)
+
+sigmasq_amp(param, n_par, r, Zis, amp_cov, warp_cov, amp_fct, t, tw)
 }
 \arguments{
 \item{param}{variance parameters.}
@@ -22,10 +25,20 @@ sigmasq(param, n_par, r, Zis, amp_cov, warp_cov, t, tw)
 \item{t}{array of time variables corresponding to r.}
 
 \item{tw}{anchor points for warp variables.}
+
+\item{amp_fct}{functional basis that amplitude variation should be expressed in. If used,
+it is automatically assumed that iid. Gaussian noise is present in the data.}
 }
 \description{
-Computes the noise scale estimate from the linearized likelihood given the residual around a predicted warp and the corresponding Jacobians.
+Estimates the common variance scale of all random effects in the model
+from the linearized likelihood given the residual around a predicted
+warp and the corresponding Jacobians.
 }
+\section{Functions}{
+\itemize{
+\item \code{sigmasq_amp}: Variance scale estimate from locally linearized
+likelihood function with amplitude variation described in a functional basis.
+}}
 \keyword{likelihood}
 \keyword{linearization}
 

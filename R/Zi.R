@@ -12,3 +12,13 @@ Zi <- function(t, dwarp, basis_fct, c) {
   dwarp <- dwarp * ((basis %*% c)[ , 1])
   return(dwarp)
 }
+
+Zis <- function(t, dwarp, basis_fct, c) {
+  m <- sapply(t, length)
+  mw <- ncol(dwarp[[1]])
+  Zis <- list()
+  for (i in 1:n) {
+    Zis[[i]] <- matrix(Zi(t[[i]], dwarp[[i]], basis_fct, c), m[i], mw)
+  }
+  return(Zis)
+}

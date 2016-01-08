@@ -15,11 +15,11 @@ posterior(w, warp_fct, t, y, basis_fct, c, Sinv, Cinv)
 
 \item{basis_fct}{basis function to describe the mean function.}
 
-\item{c}{spline coefficients.}
+\item{c}{basis coefficients.}
+
+\item{Sinv}{precision matrix for amplitude variation.}
 
 \item{Cinv}{precision matrix for the warping parameters.}
-
-\item{Ainv}{precision matrix for amplitude variation.}
 }
 \description{
 This function calculates the posterior of the data given the random warping parameters

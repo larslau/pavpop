@@ -1,0 +1,254 @@
+---
+title: "Growth curve analysis with pavpop"
+author: "Lars Lau Raket"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Growth curve analysis with pavpop}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+```{r, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(warning = FALSE, comment = "#>", fig.height = 5, fig.width = 7)
+library(pavpop)
+```
+
+## Berkeley Growth Study data
+
+```{r}
+# Load female growth data from the Berkeley growth study
+t <- fda::growth$age
+y <- fda::growth$hgtf
+m <- nrow(y)
+n <- ncol(y)
+
+# Specify age rage for controlling boundary points
+t_range <- c(0, 20)
+t <- replicate(n, t, simplify = FALSE)
+y <- lapply(1:n, function (x) y[, x])
+```
+
+## Matern covariance
+
+```{r}
+# Set up basis function
+kts <- seq(t_range[1], t_range[2], length = 15)
+basis_fct <- make_basis_fct(kts = kts, type = 'increasing', intercept = TRUE,
+                     control = list(boundary = t_range))
+
+# Set up warp function
+tw <- seq(t_range[1], t_range[2], length = 6)
+warp_fct <- make_warp_fct('smooth', tw, control = list(wright = 'extrapolate'))
+mw <- attr(warp_fct, 'mw')
+
+# Set up covariance functions
+warp_cov_par <- c(tau = 10)
+warp_cov <- make_cov_fct(Brownian, noise = FALSE, param = warp_cov_par, type = 'motion', 
+                         range = t_range)
+
+amp_cov_par <- c(scale = 200, range = 10, smoothness = 3)
+amp_cov <- make_cov_fct(Matern, noise = TRUE, param = amp_cov_par)
+
+
+# Estimate in the model
+
+# Bounds of parameters
+# NOTE: Prediction of velocities is only meaningful
+#       when the smoothness parameter is > 0.5
+lower <- c(1e-2, 1e-2, 0.5001, 1e-2)
+upper <- c(1000, Inf, Inf, Inf)
+
+res <- pavpop(y, t, basis_fct, warp_fct, amp_cov, warp_cov, homeomorphisms = 'soft',
+              like_optim_control = list(lower = lower, upper = upper))
+#
+# Plot results
+#
+
+t_p <- seq(range(t)[1], range(t)[2], length = 100)
+
+# Functional fixed effect
+theta <- basis_fct(t_p) %*% res$c
+
+# Display data with predictions
+plot(t_p, theta, ylim = range(y), type = 'n', main = 'Original heights and predicted',
+     xlab = 'Age (years)', ylab = 'Height (cm)')
+for (i in 1:n) {
+  points(t[[i]], y[[i]], pch = 19, cex = 0.3, col = rainbow(n)[i])
+  lines(t_p, predict_curve(t_p, t[[i]], y[[i]], basis_fct, res$c, warp_fct, res$w[, i], 
+                           amp_cov, res$amp_cov_par),
+        lwd = 0.5, col = rainbow(n)[i])
+
+}
+lines(t_p, theta, ylim = range(y), lwd = 2, lty = 2)
+
+# Compute and display growth velocities
+plot(t_p, t_p, ylim = c(0, 23), type = 'n', main = 'Predicted growth velocities',
+     xlab = 'Age (years)', ylab = 'Growth velocity (cm/year)')
+for (i in 1:n) {
+  lines(t_p, predict_curve(t_p, t[[i]], y[[i]], basis_fct, res$c, warp_fct, res$w[, i], 
+                           amp_cov, res$amp_cov_par, deriv = TRUE),
+        lwd = 0.5, col = rainbow(n)[i])
+}
+
+
+# Display predicted warping functions
+plot(t_p, t_p, type = 'l', lwd = 2, lty = 2, main = 'Warping functions', 
+     xlab = 'Age (years)', ylab = 'Biological age (years)')
+for (i in 1:n) lines(t[[i]], warp_fct(res$w[,i], t[[i]]), lwd = 0.4, col = rainbow(n)[i])
+
+
+# Display estimated warp covariance
+res$sigma^2 * warp_cov(tw[2:(mw + 1)], param = res$warp_cov_par)
+
+```
+
+## Random B-spline basis model
+```{r}
+# Set up amplitude function and covariance
+amp_fct <- make_basis_fct(df = 10, type = 'B-spline', intercept = TRUE, control = list(boundary = t_range))
+# amp_cov <- make_cov_fct(id_cov, noise = FALSE, param = 300)
+amp_cov <- make_cov_fct(diag_cov, noise = FALSE, param = rep(10, attr(amp_fct, 'df')))
+
+# Estimate in the model
+
+res <- pavpop(y, t, basis_fct, warp_fct, amp_cov, warp_cov, amp_fct, homeomorphisms = 'soft')
+
+#
+# Plot results
+#
+
+# Functional fixed effect
+theta <- basis_fct(t_p) %*% res$c
+
+# Display data with predictions
+plot(t_p, theta, ylim = range(y), type = 'n', main = 'Original heights and predicted',
+     xlab = 'Age (years)', ylab = 'Height (cm)')
+for (i in 1:n) {
+  points(t[[i]], y[[i]], pch = 19, cex = 0.3, col = rainbow(n)[i])
+  lines(t_p, predict_curve(t_p, t[[i]], y[[i]], basis_fct, res$c, warp_fct, res$w[, i], 
+                           amp_cov, res$amp_cov_par, amp_fct = amp_fct),
+        lwd = 0.5, col = rainbow(n)[i])
+}
+
+lines(t_p, theta, ylim = range(y), lwd = 2, lty = 2)
+
+# Compute and display growth velocities
+plot(t_p, t_p, ylim = c(0, 23), type = 'n', main = 'Predicted growth velocities',
+     xlab = 'Age (years)', ylab = 'Growth velocity (cm/year)')
+for (i in 1:n) {
+  lines(t_p, predict_curve(t_p, t[[i]], y[[i]], basis_fct, res$c, warp_fct, res$w[, i], 
+                           amp_cov, res$amp_cov_par, amp_fct = amp_fct, deriv = TRUE),
+        lwd = 0.5, col = rainbow(n)[i])
+}
+
+
+# Display predicted warping functions
+plot(t_p, t_p, type = 'l', lwd = 2, lty = 2, main = 'Warping functions', 
+     xlab = 'Age (years)', ylab = 'Biological age (years)')
+for (i in 1:n) lines(t[[i]], warp_fct(res$w[,i], t[[i]]), lwd = 0.4, col = rainbow(n)[i])
+
+# Display estimated warp covariance
+res$sigma^2 * warp_cov(tw[2:(mw + 1)], param = res$warp_cov_par)
+
+```
+
+## Random intercept model
+```{r}
+# Set up amplitude function and covariance
+amp_fct <- make_basis_fct(type = 'intercept')
+amp_cov <- make_cov_fct(id_cov, noise = FALSE, param = 300)
+
+# Estimate in the model
+
+res <- pavpop(y, t, basis_fct, warp_fct, amp_cov, warp_cov, amp_fct, homeomorphisms = 'soft')
+
+#
+# Plot results
+#
+
+# Functional fixed effect
+theta <- basis_fct(t_p) %*% res$c
+
+# Display data with predictions
+plot(t_p, theta, ylim = range(y), type = 'n', main = 'Original heights and predicted',
+     xlab = 'Age (years)', ylab = 'Height (cm)')
+for (i in 1:n) {
+  points(t[[i]], y[[i]], pch = 19, cex = 0.3, col = rainbow(n)[i])
+  lines(t_p, predict_curve(t_p, t[[i]], y[[i]], basis_fct, res$c, warp_fct, res$w[, i], 
+                           amp_cov, res$amp_cov_par, amp_fct = amp_fct),
+        lwd = 0.5, col = rainbow(n)[i])
+}
+
+lines(t_p, theta, ylim = range(y), lwd = 2, lty = 2)
+
+# Compute and display growth velocities
+plot(t_p, t_p, ylim = c(0, 23), type = 'n', main = 'Predicted growth velocities',
+     xlab = 'Age (years)', ylab = 'Growth velocity (cm/year)')
+for (i in 1:n) {
+  lines(t_p, predict_curve(t_p, t[[i]], y[[i]], basis_fct, res$c, warp_fct, res$w[, i], 
+                           amp_cov, res$amp_cov_par, amp_fct = amp_fct, deriv = TRUE),
+        lwd = 0.5, col = rainbow(n)[i])
+}
+
+
+# Display predicted warping functions
+plot(t_p, t_p, type = 'l', lwd = 2, lty = 2, main = 'Warping functions', 
+     xlab = 'Age (years)', ylab = 'Biological age (years)')
+for (i in 1:n) lines(t[[i]], warp_fct(res$w[,i], t[[i]]), lwd = 0.4, col = rainbow(n)[i])
+
+# Display estimated warp covariance
+res$sigma^2 * warp_cov(tw[2:(mw + 1)], param = res$warp_cov_par)
+
+```
+
+## Random intercept model with free warp covariance
+```{r}
+# Set up amplitude function and covariance
+amp_fct <- make_basis_fct(type = 'intercept')
+amp_cov <- make_cov_fct(id_cov, noise = FALSE, param = 300)
+
+# Set warp covariance to be free
+warp_cov <- make_cov_fct(unstr_cov, noise = FALSE, param = c(rep(10, mw), rep(0, mw * (mw - 1) / 2)))
+
+# Estimate in the model
+
+res <- pavpop(y, t, basis_fct, warp_fct, amp_cov, warp_cov, amp_fct, homeomorphisms = 'soft')
+
+#
+# Plot results
+#
+
+# Functional fixed effect
+theta <- basis_fct(t_p) %*% res$c
+
+# Display data with predictions
+plot(t_p, theta, ylim = range(y), type = 'n', main = 'Original heights and predicted',
+     xlab = 'Age (years)', ylab = 'Height (cm)')
+for (i in 1:n) {
+  points(t[[i]], y[[i]], pch = 19, cex = 0.3, col = rainbow(n)[i])
+  lines(t_p, predict_curve(t_p, t[[i]], y[[i]], basis_fct, res$c, warp_fct, res$w[, i], 
+                           amp_cov, res$amp_cov_par, amp_fct = amp_fct),
+        lwd = 0.5, col = rainbow(n)[i])
+}
+
+lines(t_p, theta, ylim = range(y), lwd = 2, lty = 2)
+
+# Compute and display growth velocities
+plot(t_p, t_p, ylim = c(0, 23), type = 'n', main = 'Predicted growth velocities',
+     xlab = 'Age (years)', ylab = 'Growth velocity (cm/year)')
+for (i in 1:n) {
+  lines(t_p, predict_curve(t_p, t[[i]], y[[i]], basis_fct, res$c, warp_fct, res$w[, i], 
+                           amp_cov, res$amp_cov_par, amp_fct = amp_fct, deriv = TRUE),
+        lwd = 0.5, col = rainbow(n)[i])
+}
+
+
+# Display predicted warping functions
+plot(t_p, t_p, type = 'l', lwd = 2, lty = 2, main = 'Warping functions', 
+     xlab = 'Age (years)', ylab = 'Biological age (years)')
+for (i in 1:n) lines(t[[i]], warp_fct(res$w[,i], t[[i]]), lwd = 0.4, col = rainbow(n)[i])
+
+# Display estimated warp covariance
+res$sigma^2 * warp_cov(1:mw, param = res$warp_cov_par)
+
+```

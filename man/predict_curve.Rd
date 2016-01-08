@@ -4,8 +4,9 @@
 \alias{predict_curve}
 \title{Predict individual curves}
 \usage{
-predict_curve(t_p, t, y, c, basis_fct, warp_fct, amp_cov, amp_cov_par,
-  w = NULL, warp_cov = NULL, warp_cov_par = NULL, deriv = FALSE)
+predict_curve(t_p, t, y, basis_fct, c, warp_fct, w = NULL, amp_cov = NULL,
+  amp_cov_par = NULL, amp_fct = NULL, warp_cov = NULL,
+  warp_cov_par = NULL, deriv = FALSE, verbose_output = FALSE)
 }
 \arguments{
 \item{t_p}{evaluation points for prediction.}
@@ -14,25 +15,38 @@ predict_curve(t_p, t, y, c, basis_fct, warp_fct, amp_cov, amp_cov_par,
 
 \item{y}{observation values.}
 
+\item{basis_fct}{basis function to describe the mean function.}
+
 \item{c}{weights for basis functions.}
 
-\item{basis_fct}{basis function to describe the mean function.}
+\item{warp_fct}{warping function.}
+
+\item{w}{warping parameters (optional). If parameters are not supplied, they are
+predicted from the parameter estimates in the model.}
+
+\item{amp_cov}{amplitude covariance matrix function.}
 
 \item{amp_cov_par}{amplitude covariance parameters.}
 
-\item{w}{warping parameters.}
+\item{amp_fct}{functional basis that amplitude variation should be expressed in.
+If used, it is assumed that iid. Gaussian noise is present in the data.}
+
+\item{warp_cov}{warp covariance matrix function. If \code{w} is supplied,
+the argument is ignored.}
+
+\item{warp_cov_par}{warp covariance parameters. If \code{w} is supplied,
+the argument is ignored.}
 
 \item{deriv}{logical. Should the derivative of the curve be predicted?}
 
-\item{amp_cov_fct}{amplitude covariance matrix function.}
-
-\item{tw}{anchor points for the warping parameters.}
+\item{verbose_output}{logical. Should output also include predicted warps, residuals
+and the value of the posterior w | y.}
 }
 \value{
 predicted curve
 }
 \description{
-This function predicts individual curves from estimated parameters and warps.
+This function predicts individual curves given the estimated parameters and predicted warps.
 }
 \keyword{curve}
 \keyword{prediction}

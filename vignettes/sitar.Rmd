@@ -17,7 +17,7 @@ library(pavpop)
 
 ```{r}
 # Number of samples
-n <- 10 
+n <- 20 
 # Number of observation points
 m <- 100 
 
@@ -26,22 +26,24 @@ t <- seq(0, 1, length = m + 2)[2:(m + 1)]
 
 # Common basis function (both mean and amplitude variation)
 kts <- seq(0, 1, length = 10)
-basis_fct <- make_basis_fct(kts = kts, intercept = TRUE, boundary = c(-0.2, 1.2))
-amp_fct <- make_basis_fct(only_intercept = TRUE)
+basis_fct <- make_basis_fct(kts = kts, intercept = TRUE, 
+                            control = list(boundary = c(-0.5, 1.5)))
+amp_fct <- make_basis_fct(type = 'intercept')
 df <- attr(basis_fct, 'df')
 
 # Generate true mean weights 
-beta_t <- rexp(df)
+beta_t <- rexp(df, 0.5)
 
 # Generate random intercepts
 b_t <- rnorm(n, sd = 2)
 
 # Generate warping function and random parameters
+sigma <- 0.1
 warp_fct <- make_warp_fct(type = 'linear')
-w_t <- replicate(n, rnorm(2, sd = c(0.1, 0.05)))
+warp_cov_t <- matrix(c(2, 0.5, 0.5, 1), 2, 2)
+w_t <- replicate(n, (t(chol(warp_cov_t)) %*% rnorm(2, sd = sigma))[, 1])
 
 # Generate data
-sigma <- 0.1
 y <- lapply(1:n, function(i) {as.numeric(basis_fct(warp_fct(w_t[, i], t)) %*% beta_t 
                                          + amp_fct(t) %*% b_t[i] 
                                          + rnorm(m, sd = sigma))}) 
@@ -60,9 +62,9 @@ lines(t[[1]], basis_fct(t[[1]]) %*% beta_t , lwd = 2, lty = 2)
 We now set up pavpop to estimate in the sitar model
 ```{r}
 amp_cov <- make_cov_fct(id_cov, noise = FALSE)
-warp_cov <- make_cov_fct(id_cov, param = c(1, 1), noise = FALSE)
+warp_cov <- make_cov_fct(unstr_cov, param = c(1, 1, 0), noise = FALSE)
 
-res <- pavpop_amp(y, t, basis_fct, amp_fct, warp_fct, amp_cov, warp_cov, iter = c(10, 10))
+res <- pavpop(y, t, basis_fct, warp_fct, amp_cov, warp_cov, amp_fct, iter = c(10, 10))
 
 # Plot aligned samples
 t_p <- seq(-0.2, 1.2, length = m + 2)
@@ -85,8 +87,15 @@ Are the parameter estimates okay?
 res$sigma
 # Amplitude standard deviations: 2
 res$sigma * sqrt(res$amp_cov_par)
-# Warp standard deviations: c(0.1, 0.05)
-res$sigma * sqrt(res$warp_cov_par)
+
+# Warp covariance
+
+# True
+sigma^2 * warp_cov_t
+# Observed
+cov(t(w_t))
+# estimated
+res$sigma^2 * warp_cov(1:2, res$warp_cov_par)
 ```
 
 ## Traditional sitar estimation

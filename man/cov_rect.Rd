@@ -18,4 +18,7 @@ cov_rect(t, t_p, cov_fct, param, ...)
 \description{
 Generate rectangular evaluations of covariance functions that are typically used for prediction purposes.
 }
+\seealso{
+\code{link{predict_curve}}
+}
 
