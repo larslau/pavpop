@@ -14,6 +14,7 @@ Zi <- function(t, dwarp, basis_fct, c) {
 }
 
 Zis <- function(t, dwarp, basis_fct, c) {
+  n <- length(t)
   m <- sapply(t, length)
   mw <- ncol(dwarp[[1]])
   Zis <- list()

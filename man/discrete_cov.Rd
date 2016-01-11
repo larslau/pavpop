@@ -65,7 +65,7 @@ id_cov(t)
 const_cov(t)
 
 # Generate diagonal covariance
-diag_cov(t, param = 1:3)
+diag_cov(t, param = 1:2)
 
 # Generate unstructured covariance matrix
 unstr_cov(t, param = c(1, 1, 0.5))
@@ -77,7 +77,7 @@ det(C)
 
 }
 \seealso{
-\code{link{make_cov_fct}}
+\code{\link{make_cov_fct}}
 }
 \keyword{covariance}
 

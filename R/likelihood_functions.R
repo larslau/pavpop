@@ -1,3 +1,5 @@
+# TODO: Check posterior_grad
+
 #' Locally linearized likelihood function
 #'
 #' Computes the linearized likelihood given the residual around a given warp and the corresponding Jacobians.
@@ -99,7 +101,7 @@ like_amp <- function(param, n_par, r, Zis, amp_cov, warp_cov, amp_fct, t, tw) {
       LR <- chol2inv(chol(as.matrix(Cinv + t(ZZ) %*% SLR %*% ZZ)))
       logdet_tmp <- determinant(LR)$modulus[1]
     } else {
-      LR <- Matrix(data = 0, nrow = nrow(Cinv), ncol = nrow(Cinv))
+      LR <- Matrix::Matrix(data = 0, nrow = nrow(Cinv), ncol = nrow(Cinv))
     }
 
     rr <- SLR %*% r[[i]]
@@ -339,7 +341,7 @@ sigmasq <- function(param, n_par, r, Zis, amp_cov, warp_cov, t, tw) {
       S <- amp_cov(t[[i]], amp_cov_par)
       U <- chol(S)
     } else {
-      S <- U <- Diagonal(m[i], 1)
+      S <- U <- Matrix::Diagonal(m[i], 1)
     }
     rr <- r[[i]]
     ZZ <- Zis[[i]]
@@ -390,7 +392,7 @@ sigmasq_amp <- function(param, n_par, r, Zis, amp_cov, warp_cov, amp_fct, t, tw)
     if (!is.null(warp_cov)) {
       LR <- chol2inv(chol(as.matrix(Cinv + t(ZZ) %*% SLR %*% ZZ)))
     } else {
-      LR <- Matrix(data = 0, nrow = nrow(Cinv), ncol = nrow(Cinv))
+      LR <- Matrix::Matrix(data = 0, nrow = nrow(Cinv), ncol = nrow(Cinv))
     }
 
     rr <- SLR %*% r[[i]]
@@ -405,6 +407,7 @@ sigmasq_amp <- function(param, n_par, r, Zis, amp_cov, warp_cov, amp_fct, t, tw)
 #'
 #' This function calculates the posterior of the data given the random warping parameters
 #' @param w warping parameters.
+#' @param warp_fct warping function.
 #' @param t evaluation points.
 #' @param y values at evaluation points.
 #' @param basis_fct basis function to describe the mean function.
@@ -422,30 +425,30 @@ posterior <- function(w, warp_fct, t, y, basis_fct, c, Sinv, Cinv) {
   return((t(r) %*% Sinv %*% r + t(w) %*% Cinv %*% w)[1])
 }
 
-#' Posterior of the data given the random warping parameters
-#'
-#' This function calculates the posterior of the data given the random warping parameters
-#' @param w warping parameters.
-#' @param dwarp Jaobian of the vector of observed warped points in the warping parameters.
-#' @param t evaluation points.
-#' @param y values at evaluation points.
-#' @param tw anchor points for the warping parameters.
-#' @param c B-spline coefficients.
-#' @param Sinv precision matrix for amplitude variation.
-#' @param Cinv precision matrix for the warping parameters.
-#' @param basis_fct basis function to describe the mean function.
-#' @keywords warping
-#' @keywords posterior
-
-posterior_grad <- function(w, dwarp, t, y, tw, c, Sinv, Cinv, basis_fct) {
-  vt <- v(w, t, tw, smooth = smooth_warp, smooth_warp = FALSE)
-  vt[vt < 0] <- 0
-  vt[vt > 1] <- 1
-  r <- basis_fct(vt) %*% c - y
-  theta_d <- basis_fct(vt, deriv = TRUE) %*% c
-  grad <- 2 * t(r) %*% Sinv %*% (dwarp * theta_d[, 1])
-  return(as.numeric(grad + 2 * w %*% Cinv))
-}
+# #' Posterior of the data given the random warping parameters
+# #'
+# #' This function calculates the posterior of the data given the random warping parameters
+# #' @param w warping parameters.
+# #' @param warp_fct warping function.
+# #' @param dwarp Jaobian of the vector of observed warped points in the warping parameters.
+# #' @param t evaluation points.
+# #' @param y values at evaluation points.
+# #' @param c B-spline coefficients.
+# #' @param Sinv precision matrix for amplitude variation.
+# #' @param Cinv precision matrix for the warping parameters.
+# #' @param basis_fct basis function to describe the mean function.
+# #' @keywords warping
+# #' @keywords posterior
+#
+# posterior_grad <- function(w, warp_fct, dwarp, t, y, c, Sinv, Cinv, basis_fct) {
+#   vt <- warp_fct(w, t)
+#   vt[vt < 0] <- 0
+#   vt[vt > 1] <- 1
+#   r <- basis_fct(vt) %*% c - y
+#   theta_d <- basis_fct(vt, deriv = TRUE) %*% c
+#   grad <- 2 * t(r) %*% Sinv %*% (dwarp * theta_d[, 1])
+#   return(as.numeric(grad + 2 * w %*% Cinv))
+# }
 
 # Minimize posterior of the data given the random warping parameters using a pyramidal primal-dual approach
 # TODO: UPDATE, DON'T USE IN CURRENT FORM!!

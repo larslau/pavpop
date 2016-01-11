@@ -40,7 +40,7 @@ likelihood to give a speed-up, large data sizes are required.}
 
 \item{homeomorphisms}{should warps be constrained to be homeomorphisms? Options are: \code{'no'}, \code{'soft'} or \code{'hard'}. 'soft' will project the prediction onto the space of homeomorphisms after each prediction. 'hard' will do the optimiziation in the constrained space (not implemented yet!).}
 
-\item{like_optim_control}{list of control options for likelihood optimization. Parameters are given as \code{c(amp_cov_par, warp_cov_par)} and options include lower, upper, method, ndev (see \code{\link[stats::optim]{optim}}).}
+\item{like_optim_control}{list of control options for likelihood optimization. Parameters are given as \code{c(amp_cov_par, warp_cov_par)} and options include lower, upper, method, ndev (see \code{\link[stats]{optim}}).}
 }
 \description{
 This function does likelihood estimation in the model \deqn{y_i(t)=\theta(v(t, w_i))+x_i(t)+\epsilon_i(t)} based on iterative local linearization of the model around predictions of the random warping parameters \eqn{w_i}.
@@ -121,6 +121,9 @@ for (i in 1:n) {
 plot(t_p, t_p, type = 'l', lwd = 2, lty = 2, main = 'Warping functions',
      xlab = 'Age (years)', ylab = 'Biological age (years)')
 for (i in 1:n) lines(t[[i]], warp_fct(res$w[,i], t[[i]]), lwd = 0.4, col = rainbow(n)[i])
+}
+\references{
+L.L. Raket, S. Sommer, and B. Markussen, "A nonlinear mixed-effects model for simultaneous smoothing and registration of functional data," Pattern Recognition Letters, vol. 38, pp. 1-7, 2014, 10.1016/j.patrec.2013.10.018.
 }
 \seealso{
 See the vignettes for many more examples.

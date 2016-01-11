@@ -22,7 +22,7 @@ Matern(seq(0, 1, length = 10), param = c(scale = 1, range = 0.5, smoothness = 2)
 Matern(seq(0, 1, length = 10), param = c(scale = 1, range = 1, smoothness = 2))
 }
 \seealso{
-\code{link{make_cov_fct}}
+\code{\link{make_cov_fct}}
 }
 \keyword{covariance}
 

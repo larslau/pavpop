@@ -13,6 +13,6 @@ containing systematic phase and amplitude variation.
 Lars Lau Raket \email{larslau@math.ku.dk}
 }
 \references{
-L.L. Raket, S. Sommer, and B. Markussen, “A nonlinear mixed-effects model for simultaneous smoothing and registration of functional data,” Pattern Recognition Letters, vol. 38, pp. 1-7, 2014.
+L.L. Raket, S. Sommer, and B. Markussen, "A nonlinear mixed-effects model for simultaneous smoothing and registration of functional data," Pattern Recognition Letters, vol. 38, pp. 1-7, 2014, 10.1016/j.patrec.2013.10.018.
 }
 

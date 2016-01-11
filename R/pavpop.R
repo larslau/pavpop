@@ -3,7 +3,7 @@
 #'
 #' @docType package
 #' @author Lars Lau Raket \email{larslau@@math.ku.dk}
-#' @references L.L. Raket, S. Sommer, and B. Markussen, “A nonlinear mixed-effects model for simultaneous smoothing and registration of functional data,” Pattern Recognition Letters, vol. 38, pp. 1-7, 2014.
+#' @references L.L. Raket, S. Sommer, and B. Markussen, "A nonlinear mixed-effects model for simultaneous smoothing and registration of functional data," Pattern Recognition Letters, vol. 38, pp. 1-7, 2014, 10.1016/j.patrec.2013.10.018.
 #'
 #' @name pavpop-package
 NULL
@@ -50,9 +50,11 @@ NULL
 #' @param use_warp_gradient logical. Should warp prediction use the exact gradient for based optimization?
 #' @param warp_optim_method optimization method for predicting warp. Defaults to 'CG' which gives robust results. 'Nelder-Mead' is often much faster, but not as reliable.
 #' @param homeomorphisms should warps be constrained to be homeomorphisms? Options are: \code{'no'}, \code{'soft'} or \code{'hard'}. 'soft' will project the prediction onto the space of homeomorphisms after each prediction. 'hard' will do the optimiziation in the constrained space (not implemented yet!).
-#' @param like_optim_control list of control options for likelihood optimization. Parameters are given as \code{c(amp_cov_par, warp_cov_par)} and options include lower, upper, method, ndev (see \code{\link[stats::optim]{optim}}).
+#' @param like_optim_control list of control options for likelihood optimization. Parameters are given as \code{c(amp_cov_par, warp_cov_par)} and options include lower, upper, method, ndev (see \code{\link[stats]{optim}}).
 #' @keywords likelihood estimation
 #' @seealso See the vignettes for many more examples.
+#' @references L.L. Raket, S. Sommer, and B. Markussen, "A nonlinear mixed-effects model for simultaneous smoothing and registration of functional data," Pattern Recognition Letters, vol. 38, pp. 1-7, 2014, 10.1016/j.patrec.2013.10.018.
+#' @importFrom foreach foreach '%dopar%' '%:%'
 #' @export
 #' @examples
 #' # Load male growth data from the Berkeley growth study
@@ -181,7 +183,7 @@ pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, a
   m <- sapply(y, length)
 
   # Initialize cluster
-  registerDoParallel(cores = parallel$n_cores)
+  doParallel::registerDoParallel(cores = parallel$n_cores)
 
   # Initialize warp parameters
   w <- array(0, dim = c(mw, n))
@@ -276,7 +278,7 @@ pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, a
     if (!is.null(warp_cov)) {
       Zis <- Zis(t_warped, dwarp, basis_fct, c)
     } else {
-      Zis <- lapply(m, function(m) Matrix(0, m, mw))
+      Zis <- lapply(m, function(m) Matrix::Matrix(0, m, mw))
     }
     r <- y
     for (i in 1:n) {
@@ -303,10 +305,10 @@ pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, a
         like_gr <- function(par) {
           epsilon <- 1e-5
           rep(1:length(par), each = 2)
-          res <- foreach(ip = 1:length(par), .combine = 'c') %:%
+          res <- foreach(i = 1:length(par), .combine = 'c') %:%
             foreach(sign = c(1, -1), .combine= '-') %dopar% {
               h <- rep(0, length(par))
-              h[ip] <- sign * epsilon
+              h[i] <- sign * epsilon
               return(like_fct(par + h) / (2 * epsilon))
             }
           return(res)
@@ -317,11 +319,11 @@ pavpop <- function(y, t, basis_fct, warp_fct, amp_cov = NULL, warp_cov = NULL, a
           epsilon <- 1e-5
           rep(1:length(par), each = 2)
           res <- rep(0, length(par))
-          for (ip in  1:length(par)) {
+          for (i in  1:length(par)) {
             for (sign in c(1, -1)) {
               h <- rep(0, length(par))
-              h[ip] <- sign * epsilon
-              res[ip] <- res[ip] + sign * like_fct(par + h) / (2 * epsilon)
+              h[i] <- sign * epsilon
+              res[i] <- res[i] + sign * like_fct(par + h) / (2 * epsilon)
             }
           }
           return(res)

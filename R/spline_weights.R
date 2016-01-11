@@ -52,7 +52,7 @@ spline_weights <- function(y, t, Sinv = NULL, basis_fct, weights = NULL) {
   dvec <- matrix(0, nb, 1)
 
   # If no precision matrix is supplied, use identity
-  if (is.null(Sinv)) Sinv <- lapply(m, Diagonal, x = 1)
+  if (is.null(Sinv)) Sinv <- lapply(m, Matrix::Diagonal, x = 1)
 
   for (i in 1:n) {
     basis <- basis_fct(t[[i]])
@@ -66,9 +66,9 @@ spline_weights <- function(y, t, Sinv = NULL, basis_fct, weights = NULL) {
     indices <- qrDmat$pivot[1:qrDmat$rank]
 
     c <- rep(0, ncol(basis))
-    c[indices] <- solve.QP(Dmat = Dmat[indices, indices],
-                           dvec = dvec[indices,],
-                           Amat = diag(nrow = length(indices)))$solution
+    c[indices] <- quadprog::solve.QP(Dmat = Dmat[indices, indices],
+                                     dvec = dvec[indices,],
+                                     Amat = diag(nrow = length(indices)))$solution
   } else {
     # Faster to use qr?
     c <- as.numeric(MASS::ginv(as.matrix(Dmat)) %*% dvec)

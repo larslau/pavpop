@@ -138,7 +138,7 @@ make_basis_fct <- function(kts = NULL, df = NULL, type = 'B-spline', intercept =
 
     # Basis function to return
     b <- function(t, deriv = FALSE) {
-      basis <- splineDesign(Aknots, t, ord = order, derivs = deriv, outer.ok = TRUE, sparse = sparse)
+      basis <- splines::splineDesign(Aknots, t, ord = order, derivs = deriv, outer.ok = TRUE, sparse = sparse)
       if (!intercept) basis <- basis[, -1]
       return(basis[])
     }
@@ -164,7 +164,7 @@ make_basis_fct <- function(kts = NULL, df = NULL, type = 'B-spline', intercept =
       if (!deriv) {
       basis <- ispline(t, knots = kts, d = order)
       } else {
-        basis <- t(c(order / 1:(order - 1), rep(1, length(kts) - order), order / (order - 1):1) * t(splineDesign(Aknots, t, ord = order, derivs = 0, outer.ok = TRUE) * (length(kts) - 1) / diff(range(kts))))
+        basis <- t(c(order / 1:(order - 1), rep(1, length(kts) - order), order / (order - 1):1) * t(splines::splineDesign(Aknots, t, ord = order, derivs = 0, outer.ok = TRUE) * (length(kts) - 1) / diff(range(kts))))
       }
       if (intercept) {
         basis <- cbind(!deriv, matrix(basis, nrow = length(t)))

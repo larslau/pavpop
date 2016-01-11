@@ -78,6 +78,9 @@ if (packageVersion("devtools") < 1.6) {
 devtools::install_github('larslau/pavpop')
 ```
 
+## References
+
+L.L. Raket, S. Sommer, and B. Markussen, “A nonlinear mixed-effects model for simultaneous smoothing and registration of functional data,” *Pattern Recognition Letters*, vol. 38, pp. 1-7, 2014. DOI: [10.1016/j.patrec.2013.10.018](http://dx.doi.org/10.1016/j.patrec.2013.10.018)
 
 ## News
 ### Version 0.10 release note

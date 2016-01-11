@@ -24,7 +24,7 @@ Brownian(t = c(1, 1))
 Brownian(t = c(1, 1), type = 'bridge')
 }
 \seealso{
-\code{link{make_cov_fct}}
+\code{\link{make_cov_fct}}
 }
 \keyword{covariance}
 

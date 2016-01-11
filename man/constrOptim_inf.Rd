@@ -2,15 +2,46 @@
 % Please edit documentation in R/constrOptim_inf.R
 \name{constrOptim_inf}
 \alias{constrOptim_inf}
-\title{constrOptim_inf is a modified version of the regular R constrOptim
-with the modification described in https://stackoverflow.com/questions/30741117/issue-with-constroptim}
+\title{Linearly Constrained Optimization}
 \usage{
 constrOptim_inf(theta, f, grad, ui, ci, mu = 1e-04, control = list(),
   method = if (is.null(grad)) "Nelder-Mead" else "BFGS",
   outer.iterations = 100, outer.eps = 1e-05, ..., hessian = FALSE)
 }
+\arguments{
+\item{theta}{numeric (vector) starting value (of length p): must be in the feasible region.}
+
+\item{f}{function to minimise (see \code{\link[stats]{constrOptim}}).}
+
+\item{grad}{gradient of f (a function as well), or NULL (see \code{\link[stats]{constrOptim}}).}
+
+\item{ui}{constraint matrix (k x p), see \code{\link[stats]{constrOptim}}}
+
+\item{ci}{constraint vector of length k (see \code{\link[stats]{constrOptim}}).}
+
+\item{mu}{(Small) tuning parameter.}
+
+\item{control}{passed to \code{\link[stats]{optim}}.}
+
+\item{method}{passed to \code{\link[stats]{optim}}.}
+
+\item{outer.iterations}{iterations of the barrier algorithm.}
+
+\item{outer.eps}{non-negative number; the relative convergence tolerance of the barrier algorithm.}
+
+\item{...}{Other named arguments to be passed to f and grad: needs to be passed through \code{\link[stats]{optim}} so should not match its argument names.}
+
+\item{hessian}{passed to \code{\link[stats]{optim}}.}
+}
 \description{
 constrOptim_inf is a modified version of the regular R constrOptim
 with the modification described in https://stackoverflow.com/questions/30741117/issue-with-constroptim
+}
+\details{
+Estimate spline weights for given warps and covariances. The method seamlessly
+handles positivity constraints (specified in the basis function).
+}
+\seealso{
+\code{\link[stats]{constrOptim}}
 }
 

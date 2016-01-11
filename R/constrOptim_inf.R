@@ -16,10 +16,28 @@
 #  A copy of the GNU General Public License is available at
 #  http://www.r-project.org/Licenses/
 
-
+#' Linearly Constrained Optimization
+#'
 #' constrOptim_inf is a modified version of the regular R constrOptim
 #' with the modification described in https://stackoverflow.com/questions/30741117/issue-with-constroptim
 #'
+#' Estimate spline weights for given warps and covariances. The method seamlessly
+#' handles positivity constraints (specified in the basis function).
+#' @param theta numeric (vector) starting value (of length p): must be in the feasible region.
+#' @param f function to minimise (see \code{\link[stats]{constrOptim}}).
+#' @param grad gradient of f (a function as well), or NULL (see \code{\link[stats]{constrOptim}}).
+#' @param ui constraint matrix (k x p), see \code{\link[stats]{constrOptim}}
+#' @param ci constraint vector of length k (see \code{\link[stats]{constrOptim}}).
+#' @param mu (Small) tuning parameter.
+#' @param control passed to \code{\link[stats]{optim}}.
+#' @param method passed to \code{\link[stats]{optim}}.
+#' @param hessian passed to \code{\link[stats]{optim}}.
+#' @param outer.iterations iterations of the barrier algorithm.
+#' @param outer.eps non-negative number; the relative convergence tolerance of the barrier algorithm.
+#' @param ... Other named arguments to be passed to f and grad: needs to be passed through \code{\link[stats]{optim}} so should not match its argument names.
+#' @seealso \code{\link[stats]{constrOptim}}
+
+
 constrOptim_inf  <-
     function(theta, f, grad, ui, ci, mu = 0.0001, control = list(),
              method = if(is.null(grad)) "Nelder-Mead" else "BFGS",

@@ -36,7 +36,7 @@
 #' @return Covariance matrix of dimension \eqn{m x m} where \eqn{m} is the length
 #' of \code{t}.
 #' @keywords covariance
-#' @seealso \code{link{make_cov_fct}}
+#' @seealso \code{\link{make_cov_fct}}
 #' @examples
 #' # Evaluation points
 #' t <- 0:1
@@ -46,7 +46,7 @@
 #' const_cov(t)
 #'
 #' # Generate diagonal covariance
-#' diag_cov(t, param = 1:3)
+#' diag_cov(t, param = 1:2)
 #'
 #' # Generate unstructured covariance matrix
 #' unstr_cov(t, param = c(1, 1, 0.5))
@@ -120,7 +120,7 @@ attr(unstr_cov, 'type') <- 'unstr_cov'
 #' @param param parameter vector consisting of scale, range and smoothness.
 #' @keywords covariance
 #' @note Method taken from the \code{fields} package.
-#' @seealso \code{link{make_cov_fct}}
+#' @seealso \code{\link{make_cov_fct}}
 #' @export
 #' @examples
 #' Matern(seq(0, 1, length = 10), param = c(scale = 1, range = 0.5, smoothness = 2))
@@ -150,7 +150,7 @@ attr(Matern, 'type') <- 'Matern'
 #' @param range interval of the process. If \code{type = 'motion'} only the first point
 #' is used.
 #' @keywords covariance
-#' @seealso \code{link{make_cov_fct}}
+#' @seealso \code{\link{make_cov_fct}}
 #' @export
 #' @examples
 #' Brownian(t = c(1, 1))
@@ -251,7 +251,7 @@ attr(Brownian, 'type') <- 'Brownian'
 #'       col = 'lightblue', shade = 0.2,
 #'       main = 'Non-stationary Matern covariance (1, 0.1, 2)', zlim = c(0, 1.1))
 
-make_cov_fct <- function(cov_fct, noise = TRUE, param = NULL, inv_cov_fct = NULL, ns = NULL, ...) {
+make_cov_fct <- function(cov_fct, noise = TRUE, param = NULL, ns = NULL, ...) {
   # Check ns related things
   if (!is.null(ns)) {
     if (is.null(ns$knots)) stop('ns must be a list with the argument knots.')
@@ -364,7 +364,7 @@ make_cov_fct <- function(cov_fct, noise = TRUE, param = NULL, inv_cov_fct = NULL
     }
   }
   # Set solve method
-  attr(f, 'inv_cov_fct') <- inv_cov_fct
+  attr(f, 'inv_cov_fct') <- attr(cov_fct, 'inv_cov_fct')
   # Set the scale parameter
   attr(f, 'scale') <- ifelse(any(names(formals(cov_fct)$param) == 'scale'), which(names(formals(cov_fct)$param) == 'scale') - 1, NA)
   # Include covariance function evaluated with additional arguments
@@ -396,8 +396,9 @@ make_cov_fct <- function(cov_fct, noise = TRUE, param = NULL, inv_cov_fct = NULL
 #' @param t observation points.
 #' @param t_p new "prediction" points.
 #' @param cov_fct covariance function.
+#' @param param covariance parameters to fill in.
 #' @param ... arguments passed to cov_fct.
-#' @seealso \code{link{predict_curve}}
+#' @seealso \code{\link{predict_curve}}
 #' @export
 
 cov_rect <- function(t, t_p, cov_fct, param, ...) {
@@ -433,6 +434,7 @@ cov_rect <- function(t, t_p, cov_fct, param, ...) {
 #' @export
 
 fill_precision <- function(t, cov_fct, param, amp_fct = NULL) {
+  n <- length(t)
   m <- sapply(t, length)
 
   # Check if covariance function is specified
@@ -440,7 +442,7 @@ fill_precision <- function(t, cov_fct, param, amp_fct = NULL) {
     # Check if functional basis for the amplitude variation is supplied
     if (!is.null(amp_fct)) {
       df <- attr(amp_fct, 'df')
-      SSinv <- chol2inv(chol(amp_cov(1:df, param)))
+      SSinv <- chol2inv(chol(cov_fct(1:df, param)))
 
       # Fill precision matrices
       Sinv <- list()
@@ -462,6 +464,6 @@ fill_precision <- function(t, cov_fct, param, amp_fct = NULL) {
     }
   } else {
     # No covariance specified, assuming iid. Gaussian noise
-    lapply(m, Diagonal, x = 1)
+    lapply(m, Matrix::Diagonal, x = 1)
   }
 }

@@ -9,6 +9,8 @@ posterior(w, warp_fct, t, y, basis_fct, c, Sinv, Cinv)
 \arguments{
 \item{w}{warping parameters.}
 
+\item{warp_fct}{warping function.}
+
 \item{t}{evaluation points.}
 
 \item{y}{values at evaluation points.}

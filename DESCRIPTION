@@ -6,11 +6,17 @@ Description: The package contains methods for doing likelihood estimation in a
     nonlinear mixed-effects model for curve data where the random effects model
     amplitude and phase variation.
 Depends:
-    R (>= 3.0.0),
+    R (>= 3.0.0)
+Imports:
     Matrix,
+    MASS,
     splines,
     quadprog,
-    doParallel
+    doParallel,
+    foreach,
+Suggests:
+    fda,
+    sitar
 License: GPL-3.0
 LazyData: true
 ByteCompile: true
