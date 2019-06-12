@@ -5,6 +5,7 @@ Authors@R: "Lars Lau Raket <larslau@math.ku.dk> [aut, cre]"
 Description: The package contains methods for doing likelihood estimation in a
     nonlinear mixed-effects model for curve data where the random effects model
     amplitude and phase variation.
+Depends: R (>= 3.1.0)
 Imports:
     Matrix,
     MASS,
@@ -12,13 +13,12 @@ Imports:
     quadprog,
     doParallel,
     foreach,
+    knitr
 Suggests:
     fda,
     sitar
 License: GPL-3.0
 LazyData: true
 ByteCompile: true
-Suggests:
-    knitr
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1
