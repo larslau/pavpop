@@ -5,8 +5,6 @@ Authors@R: "Lars Lau Raket <larslau@math.ku.dk> [aut, cre]"
 Description: The package contains methods for doing likelihood estimation in a
     nonlinear mixed-effects model for curve data where the random effects model
     amplitude and phase variation.
-Depends:
-    R (>= 3.0.0)
 Imports:
     Matrix,
     MASS,
